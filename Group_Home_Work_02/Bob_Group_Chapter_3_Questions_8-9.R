@@ -13,29 +13,17 @@ dev.off()
 
 
 # IMPORT AND MODIFY/CLEAN DATA
-file_path = "../../Data_Sources/Auto.csv"
-data = read.csv(file_path)
-attach(data)
+file_path = "../Data_Sources/Auto.data"
+data = read.table(file_path)
 
 # SET CATAGORICAL DATA
-
-# QUANTITATIVE
-data$horsepower = as.numeric(horsepower)
-
-# QUALATATIVE
-data$cylinders = as.factor(cylinders)
-data$year = as.factor(year)
-data$origin = as.factor(origin)
-
 
 # 8: USING THE AUTO.CSV DATA SET
 # SIMPLE LINEAR REGRESSION ON AUTO DATASET
 
 # 8.A: USE "lm()" TO PERFORM LINEAR REGRESSION WITH "mpg" AS A RESPONCE TO "horsepower"
 # PRINT RESULTS WITH "summary()"
-qwerty = lm(mpg ~ horsepower)
 
-summary(qwerty)
 
 # 8.A.i: IS THERE A RELATIONSHIP BETWEEN THE PREDICTOR AND THE RESPONCE?
 
@@ -54,3 +42,4 @@ summary(qwerty)
 # COMMENT ON PROBLEMS WITH THE FIT
 
 
+# 9: MULTIPLE REGRESSION 

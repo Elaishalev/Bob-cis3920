@@ -7,7 +7,7 @@ dev.off()
 # 8.A: READ THE CSV
 # CHANGE OR OMMIT VARIABLE BASED ON SOURCE FILE LOCATION RELATIVE TO R SCRIPT
 
-file_path_to_file = "../../Data_Sources/college.csv" 
+file_path_to_file = "../Data_Sources/college.csv" 
 CSV_file = read.csv(file_path_to_file)
 
 # 8.B: MODIFY ROW NAMES USING FIX FUNCTION
