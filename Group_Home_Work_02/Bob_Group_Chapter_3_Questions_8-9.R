@@ -18,28 +18,41 @@ data = read.table(file_path)
 
 # SET CATAGORICAL DATA
 
-# 8: USING THE AUTO.CSV DATA SET
-# SIMPLE LINEAR REGRESSION ON AUTO DATASET
+#8a
+#previuos data cleanup
+rm(list = ls())
+dev.off()
+#read in table
+Auto=read.table("Auto.data")
+Auto=read.table("Auto.data",header=T,na.string="?")
 
-# 8.A: USE "lm()" TO PERFORM LINEAR REGRESSION WITH "mpg" AS A RESPONCE TO "horsepower"
-# PRINT RESULTS WITH "summary()"
+#cheking for missing data
+colSums(is.na(Auto))
+Auto=na.omit(Auto)
+fix(Auto)
+dim(Auto)
+is.na(Auto)
+attach(Auto)
+lm.fit=lm(mpg~horsepower)
+lm.fit
+summary(lm.fit)
 
+cor(horsepower,mpg)
+#8 i:  yes, there is a connection between horsepower and mpg
+#8 ii: correlation is strong : -.78
+#8 iii: correlation is negative
+predict(lm.fit,data.frame(horsepower=98),interval="confidence")
+predict(lm.fit,data.frame(horsepower=98),interval="prediction")
 
-# 8.A.i: IS THERE A RELATIONSHIP BETWEEN THE PREDICTOR AND THE RESPONCE?
+#8iv: predicted mpg associated with horsepower of 98 is 24.47
+# associated 95% confidence interwals is (23.97,24.96)
+#associated 95% prediction interwals is (14.8, 34.12)
+#8b
+abline(lm.fit,col="red",lwd=4)
+#8c
+plot(horsepower,mpg, pch=1, col="darkgreen")
+#comments: ??????
 
-
-# 8.A.ii: HOW STRONG IS THE RELATIONSHIP?
-
-# 8.A.iii: IS THE RELATIONSHIP POSETIVE OR NEGATIVE?
-
-# 8.A.vi: WHAT IS THE PREDICTED 'mgp' ASSOCIATED WITH A 'horsepower' OF 98?
-# WHAT ARE THE ASSOCIATED 95% CONFIDENCE AND PREDICTION INTERVALS?
-
-# 8.B: PLOT THE RESPONCE AND THE PREDICTOR; 
-#USE 'abline' TO PLOT THE LEAST SQUARES REGRESSION LINE
-
-# 8.C: USE 'plot' TO PRODUCE DIAGNOSTIC PLOTS OF LEAST SQUARES REGRESSION FIT
-# COMMENT ON PROBLEMS WITH THE FIT
 
 
 # 9: MULTIPLE REGRESSION 
