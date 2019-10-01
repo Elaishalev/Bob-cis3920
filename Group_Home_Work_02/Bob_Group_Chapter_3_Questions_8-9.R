@@ -56,3 +56,29 @@ plot(horsepower,mpg, pch=1, col="darkgreen")
 
 
 # 9: MULTIPLE REGRESSION 
+#9a produce scatterplot of all the data
+names(Auto)
+as.factor(cylinders)
+as.factor(year)
+as.factor(origin)
+pairs(Auto)
+#9b matrix of correlations
+Auto=Auto[,-9]
+cor(Auto)
+#9c multiple liniar regression with mpg as response variable
+fit=lm(mpg~cylinders+displacement+horsepower+weight+acceleration+year,origin)
+summary(fit)
+coefficients(fit)
+#notes here->
+
+#9d produce diagnostic plots
+par(mfrow=c(2,2))
+plot(fit)
+#9e use * and : to add interactions effects
+fitNew=lm(mpg~year*acceleration)
+summary(fitNew)
+
+#9f transformatin of varibles
+fit=lm(mpg~cylinders+displacement+horsepower+I(weight^2)+I(acceleration^2))
+summary(fitNew)
+# summary->       
