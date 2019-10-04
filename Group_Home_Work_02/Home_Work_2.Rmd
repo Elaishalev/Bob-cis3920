@@ -1,0 +1,176 @@
+---
+title: "Home_Work_2"
+author: 'Group: Bob [Maryla Wozniak, Shakila Hoque, Elai Shalev, Matthew Perez]'
+date: "10/4/2019"
+output: pdf_document
+---
+# Initial setup for following assignment
+## 1. Clearing the slate
+In order to avoid potential issues while running the code it's best to start with a fresh slate 
+```{r}
+# THE FOLLOWING COMMAND WILL CLEAR ALL VARIABLES IN THE ENVIRONMENT
+# SAVE ANY FILES OR DATA YOU WANT TO HOLD ONTO BEFORE RUNNING IT 
+rm(list = ls())
+# THE FOLLOWING COMMAND CLEARS THE PLOT PANE AND MAY SAVE AND CLOSE 
+# ANY OPEN FILES YOU MAY BE EDITING
+# SAVE ANY FILES OR DATA YOU WANT TO HOLD ONTO BEFORE RUNNING IT 
+# IF NO PLOTS AOR VISUALS ARE RUNNING IT WILL PRINT AN ERROR, IGNORE THAT.
+dev.off()
+```
+
+## 2. Setting the working directory
+```{r}
+# COPY THE OUTPUT FROM EXECUTING THE FOLLOWING LINE
+current_working_directory = getwd()
+# AND PASS THE STRING AS A PARAMETER TO THE FOLLOWING COMMAND
+setwd(current_working_directory)
+```
+## 3. Importing the data
+```{r}
+web = "http://faculty.marshall.usc.edu/gareth-james/ISL/Auto.data"
+# THE ' na.string="?" ' PARAMETER WILL MARK THE RECORDS WITH '?'
+# THIS WILL HELP WITH CLEANING
+Auto=read.table(web,header=T,na.string="?")
+```
+### 4. Cleaning and formattig the data 
+The dataset provided by the University of South California is not comppletely clean so we need to omit a few records
+```{r eval=FALSE}
+# CHECKING FOR MISSING DATA 
+
+# CHECK SIZE OF DATASET
+dim(Auto)
+
+# COUNT THE ENTRIES THAT WERE MARKED USING ' na.string="?" '
+colSums(is.na(Auto))
+
+# REDEFINE THE DATASET OMITTING THE MARKED VALUES
+Auto=na.omit(Auto)
+
+# COMPARE MODIFIED SIZE OF DATASET TO ORIGINAL OUTPUT
+dim(Auto)
+
+# OPTIONAL OUTPUT OF TABLE CONFIRMING IF ANY OF THE VALUES WERE MARKED AND NOT OMITED 
+# NOTE: RUNNING THE FOLLOWING COMAND WILL PRINT A TABLE THE SIZE OF THE DATASET 
+# IT'S NOT ADVISED TO USE ON LARGE DATASETS WITH MORE THAN 300 RECORDS
+
+# is.na(Auto)
+
+# ATTACH COLOMN HEADERS AS REFERENCE VARIABLES IN THE ENVIRONMENT FOR EASIER ACCESS LATER
+attach(Auto)
+```
+
+\break
+# 8. This question involves the use of simple linear regression on the Auto data set.
+Use the steps taken in the **[initial setup(link)](#-Initial-setup-for-following-assignment)** before following allong 
+
+
+## 8. (a) Use the lm() function to perform a simple linear regression with mpg as the response and horsepower as the predictor. Use the summary() function to print the results. Comment on the output.
+```{r}
+lm.fit = lm(Auto$mpg~Auto$horsepower)
+lm.fit
+summary(lm.fit)
+```
+#### Comments:
+
+
+### 8. i. Is there a relationship between the predictor and the re- sponse?
+### 8. ii. How strong is the relationship between the predictor and the response?
+### 8. iii. Is the relationship between the predictor and the response positive or negative?
+```{r}
+cor(Auto$horsepower, Auto$mpg)
+```
+
+#### Comments
+1. Yes, there is a connection between horsepower and mpg
+2. The correlation is strong: -0.78
+3. The correlation is negative
+
+
+
+### 8. iv. What is the predicted mpg associated with a horsepower of 98? What are the associated 95 % confidence and prediction intervals?
+```{r}
+predict(lm(Auto$mpg~Auto$horsepower),data.frame(Auto$horsepower==98),interval="confidence")
+# predict(lm(Auto$mpg~Auto$horsepower),data.frame(Auto$horsepower=98),interval="prediction")
+```
+## 8. (b) Plot the response and the predictor. Use the abline() function to display the least squares regression line.
+```{r}
+plot(Auto$horsepower,Auto$mpg, pch=1, col="darkgreen", abline(lm.fit,col="red",lwd=4))
+
+```
+
+## 8. (c) Use the plot() function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with the fit.
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fit)
+```
+
+#### Comments:
+
+
+\break
+# 9. This question involves the use of multiple linear regression on the Auto data set.
+Use the steps taken in the **[initial setup(link)](#-Initial-setup-for-following-assignment)** before following allong 
+
+## 9. (a) Produce a scatterplot matrix which includes all of the variables in the data set.
+```{r}
+names(Auto)
+Auto$cylinders = as.factor(Auto$cylinders)
+Auto$year = as.factor(Auto$year)
+Auto$origin = as.factor(Auto$origin)
+pairs(Auto)
+```
+
+## 9. (b) Compute the matrix of correlations between the variables using the function cor(). You will need to exclude the name variable, which is qualitative.
+```{r eval=FALSE}
+cor(Auto[,-9])
+```
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+|row/col|mpg|cylinders|displacement|horsepower|weight|acceleration|year|origin|
+|:---:|---:|---:|---:|---:|---:|---:|---:|---:|
+|mpg|1.000|-0.778|-0.805|-0.778|-0.832|0.423|0.581|0.565|
+|cylinders|-0.778|1.000|0.951|0.843|0.898|-0.505|-0.346|-0.569|
+|displacement|-0.805|0.951|1.000|0.897|0.933|-0.544|-0.370|-0.615|
+|horsepower|-0.778|0.843|0.897|1.000|0.865|-0.689|-0.416|-0.455|
+|weight|-0.832|0.898|0.933|0.865|1.000|-0.417|-0.309|-0.585|
+|acceleration|0.423|-0.505|-0.544|-0.689|-0.417|1.000|0.290|0.213|
+|year|0.581|-0.346|-0.370|-0.416|-0.309|0.290|1.000|0.182|
+|origin|0.565|-0.569|-0.615|-0.455|-0.585|0.213|0.182|1.000|
+
+## 9. (c) Use the lm() function to perform a multiple linear regression with mpg as the response and all other variables except name as the predictors. Use the summary() function to print the results. Comment on the output.
+```{r}
+fit=lm(Auto$mpg~
+         Auto$cylinders+
+         Auto$displacement+
+         Auto$horsepower+
+         Auto$weight+
+         Auto$acceleration+
+         Auto$year+
+         Auto$origin
+       )
+summary(fit)
+coefficients(fit)
+```
+
+### 9. i. Is there a relationship between the predictors and the response?
+### 9. ii. Which predictors appear to have a statistically significant relationship to the response?
+### 9. iii. What does the coefficient for the year variable suggest?
+#### Comments
+
+
+## 9. (d) Use the plot() function to produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Do the residual plots suggest any unusually large outliers? Does the leverage plot identify any observations with unusually high leverage?
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+## 9. (e) Use the * and : symbols to fit linear regression models with interaction effects. Do any interactions appear to be statistically significant?
+```{r}
+fitNew=lm(Auto$mpg~Auto$year*Auto$acceleration)
+summary(fitNew)
+```
