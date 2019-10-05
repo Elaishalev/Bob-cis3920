@@ -1,0 +1,31 @@
+---
+title: "Home_Work_3"
+author: 'Group: Bob [Maryla Wozniak, Shakila Hoque, Elai Shalev, Matthew Perez]'
+date: "10/5/2019"
+output: html_document
+---
+# GENERAL SETUP
+
+```{r}
+rm(list = ls())
+dev.off()
+```
+
+# IMPORT CLEAN DATA
+
+```{r}
+# install.packages("ISLR")
+library("ISLR")
+Auto_local = Auto
+attach(Auto_local)
+```
+
+\break
+# Question 11: Develop a model to predict whether a car has high/low mpg.
+## (a) 
+## (b)
+## (c)
+## (d)
+## (e)
+## (f)
+## (g)??? OPTIONAL!
