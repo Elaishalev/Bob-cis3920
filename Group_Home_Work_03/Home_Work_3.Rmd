@@ -26,10 +26,13 @@ attach(Auto_local)
 
 \break
 # Question 11: Develop a model to predict whether a car has high/low mpg.
-## (A) DEFINE BINARY VARABLE 'mpg01' MPG01 = 1 IF MPG > MEDIAN(MPG) ELSE 0
+## (A) DEFINE BINARY VARIABLE 'mpg01' MPG01 = 1 IF MPG > MEDIAN(MPG) ELSE 0
 
 ```{r}
-Auto_local[["mpg01"]] =  as.integer(Auto_local$mpg > median(Auto_local$mpg))
+mpg01 = factor(mpg, ordered = F, levels = c(0,1))
+mpg01 = ifelse(mpg>median(mpg), 1, 0)
+Auto_local = data.frame(Auto_local,mpg01)
+summary(Auto_local)
 ```
 
 ## (B) VISUAL DATA EXPLORATION
@@ -37,8 +40,39 @@ Auto_local[["mpg01"]] =  as.integer(Auto_local$mpg > median(Auto_local$mpg))
 ### DESCRIBE YOUR FINDINGS
 
 ```{r}
-# PAIRWISE MATRIX PLOT EXCLUDING MPG AND NAME
-pairs(Auto_local[, c(-1, -2,-8,-9, -10)], lower.panel = NULL)
+pairs(Auto_local, lower.panel = NULL)
+
+## mpg01 is a direct product of mpg. 
+## Since horsepower, weight, displacement, and acceleration features affect mpg, they affect mpg01 as well.
+## We boxplot mpg and each of these features to investigate how they might affect mpg01
+
+boxplot(horsepower~mpg01, data = Auto_local, main = "Horsepower and mpg Boxplot")
+
+## above boxplot tells us that we can predict that cars with high horsepower would have mpg01=0 (mpg below median).
+## the highest observation of the mpg01=1 category (neglecting outliers) is about equal to the median observation of mpg01=0 category.
+
+boxplot(weight~mpg01, data = Auto_local, main = "Weight and mpg Boxplot")
+
+## above boxplot tells us that we can predict that heavy cars would belong to the mpg01=0 category (mpg below median).
+## the median observation of the mpg01=1 category is about equal to the smallest observation of mpg01=0! 
+## If a car weighs over 3500 we can certainly predict it will belong to the mpg01=0 category, and half of the cars in the Auto dataset weigh more than 3500. 
+
+boxplot(displacement~mpg01, data = Auto_local, main = "Displacement and mpg Boxplot")
+
+## above boxplot tells us that we can predict that cars with high displacement would belong to the mpg01=0 category (mpg below median).
+## all of the observations of the mpg01=1 category fit in the first quartile of the mpg01=0 category.
+## Using the displacement feature, we can predict over 75% of the cars would belong in the mpg01=0 category.
+## This feature seems to be the most useful in trying to predict mpg01.
+
+boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Boxplot")
+
+## above boxplot tells us that it would be very hard to use the acceleration feature to predict mpg01, since the two categories distribute very similarly.
+
+
+
+
+
+
 
 
 ```
