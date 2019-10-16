@@ -80,6 +80,19 @@ boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Box
 ## (C) SPLIT DATA INTO TEST AND TRAINING SETS
 
 ```{r}
+set.seed(1)
+num_train <- nrow(Auto_local) * 0.75
+
+inTrain <- sample(nrow(Auto_local), size = num_train)
+
+training <- Auto_local[inTrain,]
+testing <- Auto_local[-inTrain,]
+
+training
+testing
+
+# First, we are omitting the cars with 3 or 5 cylinders becasue there are only few of them, 
+#it will likely skew the analysis. 
 
 ```
 
@@ -87,6 +100,18 @@ boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Box
 ### WHAT IS THE TEST ERROR?
 
 ```{r}
+require(MASS)
+fmla <- as.formula('mpg01 ~ displacement + horsepower + weight + year + cylinders')
+lda_model <- lda(fmla, data = training)
+
+lda_pred <- predict(lda_model, testing)
+
+table(lda_pred$class, testing$mpg01)
+
+1 - mean(lda_pred$class == testing$mpg01)
+
+#The LDA model works great!
+#The test error is 0.122449 
 
 ```
 
@@ -94,6 +119,18 @@ boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Box
 ### WHAT IS THE TEST ERROR?
 
 ```{r}
+qda_model = qda(fmla, data = training)
+
+qda_pred <- predict(qda_model, testing)
+
+table(qda_pred$class, testing$mpg01)
+
+1 - mean(qda_pred$class == testing$mpg01)
+
+# QDA modal test error is still the same as LDA, however the test results for each value is different.
+# Example; the LDA model has a higher rate of error for values over median but the QDA have more equal distribution 
+#in the error for test value. 
+
 
 ```
 
@@ -101,6 +138,17 @@ boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Box
 ### WHAT IS THE TEST ERROR?
 
 ```{r}
+log_reg <- glm(fmla, data = training, family = binomial)
+
+pred <- predict(log_reg, testing, type = 'response')
+pred_values <- round(pred)
+table(pred_values, testing$mpg01)
+
+1- mean(pred_values == testing$mpg01)
+
+#The Legistic Regressional model seems similar to LDA and QDA model, eventhough it did not perform as well as other two 
+#model. The error rate is 0.09183673
+
 
 ```
 

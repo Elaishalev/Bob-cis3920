@@ -1,4 +1,4 @@
-# HOMEWORK #2
+# HOMEWORK #3
 # GROUP: Bob 
 # Maryla Wozniak
 # Shakila Hoque
@@ -22,32 +22,97 @@ attach(Auto_local)
 ## (A) DEFINE BINARY VARABLE 'mpg01' MPG01 = 1 IF MPG > MEDIAN(MPG) ELSE 0
 
 Auto_local[["mpg01"]] =  as.integer(Auto_local$mpg > median(Auto_local$mpg))
+mpg01 = factor(mpg, ordered = F, levels = c(0,1))
+mpg01 = ifelse(mpg>median(mpg), 1, 0)
+Auto_local = data.frame(Auto_local,mpg01)
+summary(Auto_local)
 
 
 ## (B) VISUAL DATA EXPLORATION
 ### WHICH FEATURES ARE LIKELY TO HAVE THE GREATEST IMPACT? 
 ### DESCRIBE YOUR FINDINGS
+pairs(Auto_local, lower.panel = NULL)
+
+boxplot(horsepower~mpg01, data = Auto_local, main = "Horsepower and mpg Boxplot")
+
+boxplot(weight~mpg01, data = Auto_local, main = "Weight and mpg Boxplot")
+
+boxplot(displacement~mpg01, data = Auto_local, main = "Displacement and mpg Boxplot")
+
+boxplot(acceleration~mpg01, data = Auto_local, main = "Acclereration and mpg Boxplot")
+
 
 # PAIRWISE MATRIX PLOT EXCLUDING MPG AND NAME
 pairs(Auto_local[, c(-1, -2,-8,-9, -10)], lower.panel = NULL)
 
 ## (C) SPLIT DATA INTO TEST AND TRAINING SETS
 
+set.seed(1)
+num_train <- nrow(Auto_local) * 0.75
+
+inTrain <- sample(nrow(Auto_local), size = num_train)
+
+training <- Auto_local[inTrain,]
+testing <- Auto_local[-inTrain,]
+
+training
+testing
+
+# First, we are omitting the cars with 3 or 5 cylinders becasue there are only few of them, 
+#it will likely skew the analysis. 
+
 
 ## (D) PERFORM LDA ON THE TRAINGING SET TO PREDICT 'mpg01' 
 ### WHAT IS THE TEST ERROR?
 
 
+require(MASS)
+fmla <- as.formula('mpg01 ~ displacement + horsepower + weight + year + cylinders')
+lda_model <- lda(fmla, data = training)
+
+lda_pred <- predict(lda_model, testing)
+
+table(lda_pred$class, testing$mpg01)
+
+1 - mean(lda_pred$class == testing$mpg01)
+
+#The LDA model works great!
+#The test error is 0.122449 
+
+
 ## (E) PERFORM QDA ON THE TRAINGING SET TO PREDICT 'mpg01' 
 ### WHAT IS THE TEST ERROR?
+qda_model = qda(fmla, data = training)
+
+qda_pred <- predict(qda_model, testing)
+
+table(qda_pred$class, testing$mpg01)
+
+1 - mean(qda_pred$class == testing$mpg01)
+
+# QDA modal test error is still the same as LDA, however the test results for each value is different.
+# Example; the LDA model has a higher rate of error for values over median but the QDA have more equal distribution 
+#in the error for test value. 
 
 
 ## (F) PERFORM LOGISTIC REGRESSION ON THE TRAINING DATA IN ORDER TO PREDICT 'mpg01'
 ### WHAT IS THE TEST ERROR?
 
+log_reg <- glm(fmla, data = training, family = binomial)
+
+pred <- predict(log_reg, testing, type = 'response')
+pred_values <- round(pred)
+table(pred_values, testing$mpg01)
+
+1- mean(pred_values == testing$mpg01)
+
+#The Legistic Regressional model seems similar to LDA and QDA model, eventhough it did not perform as well as other two 
+#model. The error rate is 0.09183673
 
 
 # OPTIONAL
 ## (G) PERFORM KNN ON THE TRAINING DATA WITH SEVERAL VALUES FOR 'K' IN ORDER TO PREDICS 'mpg01' 
 ### WHAT IS THE TEST ERROR?
 ### WHAT VALUE OF K PERFORMS BEST?
+
+
