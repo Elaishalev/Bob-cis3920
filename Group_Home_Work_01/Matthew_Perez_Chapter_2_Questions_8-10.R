@@ -1,54 +1,57 @@
 # GROUP HOMEWORK #1 
 # 8: USING THE COLLEGE.CSV DATA SET
 # 8: SETUP
+
+# Clear all existing variables in global environment
 rm(list = ls())
+# CLear plot tab and close/save any open files 
 dev.off()
+# Set the working dorectory to the location where the file was saved
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 # 8.A: READ THE CSV
 # CHANGE OR OMMIT VARIABLE BASED ON SOURCE FILE LOCATION RELATIVE TO R SCRIPT
 
-file_path_to_file = "../Data_Sources/college.csv" 
-CSV_file = read.csv(file_path_to_file)
+Data_Set = ISLR::College
 
 # 8.B: MODIFY ROW NAMES USING FIX FUNCTION
 
-rownames (CSV_file )=CSV_file [,1]
-fix(CSV_file)
+rownames (Data_Set )=Data_Set [,1]
+fix(Data_Set)
 
-CSV_file=CSV_file[,-1]
-fix(CSV_file)
+Data_Set=Data_Set[,-1]
+fix(Data_Set)
 
-attach(CSV_file)
+attach(Data_Set)
 
 # 8.C: MULTISTEP ANALYSIS AND DATA MANIPULATION
 # 8.C.1: PRODUCE SUMMARY OF DATA SET
 
-summary(CSV_file)
+summary(Data_Set)
 
 # 8.C.2: PRODUCE A SCATER PLOT OF THE FIRST 10 COLUMNS
-
-png("8_C_2.png")
-scater_plot_matrix = pairs(CSV_file[, 1:10])
+png(filename = "8_C_2.png")
+scater_plot_matrix = pairs(Data_Set[, 1:10])
 dev.off()
 
 # 8.C.3: PLOT "OUTSTATE" VS "PRIVATE" SIDE BY SIDE BOX PLOTS
 
 png("8_C_3.png")
-boxplot( CSV_file$Outstate ~ CSV_file$Private, xlab = "PUBLIC/PRIVATE INSTITUTION", ylab = "OUT OF STATE TUITION ($)", main = "Out of State Tuition:\nPublic vs Privates \nInstitutions")
+boxplot( Data_Set$Outstate ~ Data_Set$Private, xlab = "PUBLIC/PRIVATE INSTITUTION", ylab = "OUT OF STATE TUITION ($)", main = "Out of State Tuition:\nPublic vs Privates \nInstitutions")
 dev.off()
 
 # 8.C.4: DEFINE CATAGORICAL ATTRABUTE 'ELITE' AS TOP 10% 
 
-Elite =rep ("No",nrow(CSV_file ))
-Elite [CSV_file$Top10perc >50]=" Yes"
+Elite =rep ("No",nrow(Data_Set ))
+Elite [Data_Set$Top10perc >50]=" Yes"
 Elite =as.factor (Elite)
-CSV_file =data.frame(CSV_file ,Elite)
+Data_Set =data.frame(Data_Set ,Elite)
 
-summary(CSV_file)
+summary(Data_Set)
 
 png("8_C_4.png")
 boxplot( 
-        CSV_file$Outstate ~ CSV_file$Elite, 
+        Data_Set$Outstate ~ Data_Set$Elite, 
         xlab = "ELITE/NON-ELITE INSTITUTIONS", 
         ylab = "OUT OF STATE TUITION ($)", 
         main = "Out of State Tuition:\nElite vs NON-Elite \nInstitutions"

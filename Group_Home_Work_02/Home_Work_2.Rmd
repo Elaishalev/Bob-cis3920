@@ -19,6 +19,59 @@ rm(list = ls())
 # SAVE ANY FILES OR DATA YOU WANT TO HOLD ONTO BEFORE RUNNING IT 
 # IF NO PLOTS AOR VISUALS ARE RUNNING IT WILL PRINT AN ERROR, IGNORE THAT.
 dev.off()
+
+## NOTE: THE FOLLWOING SECTION WAS ADDED AFTER THE INITIAL 
+## INITIAL SUBMISSION OF THE PROJECT
+
+
+## Step by step instructions
+## Set the working dorectory to the location where the file was saved
+
+## Setp: 1
+## The 'rstudioapi' package allows you to access 
+## system information using the R language
+## the 'getSourceEditorContext' function allows you 
+## to retreive informaton about the source files locaiton 
+## this includes the file path without you having to
+## know where the fiole is. THe computer doest that work for you.
+
+## rstudioapi::getSourceEditorContext()
+
+
+## Step: 2
+## The line above is of type 'list' meaning there are multiple 
+## peices of information contained within. In order to get the
+## information we need we need to acess the file path 
+## under the 'path' acesor in the return of the functioncall
+## to do that we append '$path' this will print the file 
+## path including the name of the file.
+
+## rstudioapi::getSourceEditorContext()$path
+
+
+## Step: 3
+## In order to omit the name of the file from printing 
+## we can use the 'dirname' function that will ignore 
+## file names at the end of a file path and print
+## only the path leading up to where the file is saved.
+
+## dirname(rstudioapi::getSourceEditorContext()$path)
+
+
+## Step: 4
+## Lastly we use the 'setwd' comand to set the 
+## directory to the returned value of the entire function
+## call in order to set the working directory to the 
+## locaiton of the file without ever having to look for where
+## the file is actually stored.
+
+## setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
+## NOTE: THE LINES ABOVE ARE COMMENTED OUT IN ORDER TO 
+## PREVENT COMPILATION ERRORS IN 'RMD' AND OTHER 'TEX' BASED 
+## ENGINES. THIS IS A COMMAND IN ORDER TO SET YOUR WORKING 
+## DIRECTORY AND SHOULD BE COMMENTED OUT OR COMPLETELY 
+## OMITED FROM THE FINAL PRODUCT/PRESENTATION.
 ```
 
 ## 2. Setting the working directory
