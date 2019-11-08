@@ -13,7 +13,9 @@ attach(nba)
 # minutes of play time since they would
 # make the data more bias
 
-# check for NA values in the data and omit them
+nba = nba[nba$MP>6, ]
+
+# check for NA values in the data 
 
 colSums(is.na(nba))
 
@@ -26,14 +28,14 @@ train_nba = sample(1:nrow(nba), nrow(nba)/2)
 
 boost_nba = gbm(PTS~.-Tm, data = nba[train_nba,], distribution = "gaussian", n.trees = 5000, interaction.depth = 4)
 summary(boost_nba)
-par(mfrow = c(1,1))
+par(mfrow = c(2,2))
 plot(boost_nba, i="FG")
 plot(boost_nba, i="FGA")
 
 yhat.boost = predict(boost_nba, newdata = nba[-train_nba,], n.trees = 5000)
 mean((yhat.boost - nba[-train_nba ,"PTS" ])^2)
 
-# MSE for boosting is 6371294
+# MSE for boosting is 6475331
 
 
 # applying bagging
@@ -44,7 +46,7 @@ plot(yhat.bag, nba[-train_nba,"PTS"])
 abline(0,1, col = 5)
 mean((yhat.bag - nba[-train_nba ,"PTS" ])^2)
 
-#MSE for bagging is 0.7613457
+#MSE for bagging is 0.3524371
 
 
 # applying random forest, cross-validating, and pruning the tree
@@ -67,16 +69,48 @@ plot(yhat.tree, nba[-train_nba,"PTS"])
 abline(0,1, col = 5)
 mean((yhat.tree-nba[-train_nba,"PTS"])^2)
 
-# MSE for the decision tree is 2.16283
+# MSE for the decision tree is 1.807063
 
 
 # applying multiple linear regression
 par(mfrow = c(2,2))
-lm_nba = lm(PTS~.-Tm, nba, subset = train_nba)
+lm_nba = lm(PTS~.-Tm, nba[train_nba,])
 plot(lm_nba)
 summary(lm_nba)
 lm_nba.predict = predict(lm_nba, newdata = nba[-train_nba,])
 lm_nba.predict[1:5]
 mean((lm_nba.predict-nba[-train_nba,"PTS"])^2)
+par(mfrow = c(1,1))
 
-# MSE for the decision tree is 0.005425117
+# MSE for the Linear Regression is 0.005425117
+
+# We noted that 3 obs. are outliers 
+# in the training data (#11, 14, 42).
+# in the residuals vs. leverage plot we see that
+# 14 and 42 influence the model, so we will omit
+# them and see if it fits better.
+
+train_nba_lm = train_nba[-c(14,42)]
+lm_nba_2 = lm(PTS~.-Tm, nba[train_nba_lm,])
+plot(lm_nba_2)
+lm_nba.predict_2 = predict(lm_nba_2, newdata = nba[-train_nba_lm,])
+mean((lm_nba.predict_2-nba[-train_nba_lm,"PTS"])^2)
+
+# MSE for the Linear Regression is 0.00551884.
+# The MSE remained almost the same.
+
+
+# applying logistic regression
+
+log_nba = glm(PTS~.-Tm, data = nba[train_nba,])
+yhat.log = predict(log_nba, newdata = nba[-train_nba,])
+plot(yhat.log, nba[-train_nba,"PTS"])
+abline(0,1, col = 5)
+mean((yhat.log - nba[-train_nba ,"PTS" ])^2)
+
+# MSE for the Linear Regression is 0.005228678
+
+
+# Seems like the logistic regression is the best model
+# to predict the amount of points a certain player will 
+# score based on other statistics in our data.
