@@ -28,14 +28,14 @@ train_nba = sample(1:nrow(nba), nrow(nba)/2)
 
 boost_nba = gbm(PTS~.-Tm, data = nba[train_nba,], distribution = "gaussian", n.trees = 5000, interaction.depth = 4)
 summary(boost_nba)
-par(mfrow = c(2,2))
+par(mfrow = c(1,2))
 plot(boost_nba, i="FG")
 plot(boost_nba, i="FGA")
 
 yhat.boost = predict(boost_nba, newdata = nba[-train_nba,], n.trees = 5000)
 mean((yhat.boost - nba[-train_nba ,"PTS" ])^2)
 
-# MSE for boosting is 6475331
+# MSE for boosting is 0.6475331
 
 
 # applying bagging
@@ -80,7 +80,6 @@ summary(lm_nba)
 lm_nba.predict = predict(lm_nba, newdata = nba[-train_nba,])
 lm_nba.predict[1:5]
 mean((lm_nba.predict-nba[-train_nba,"PTS"])^2)
-par(mfrow = c(1,1))
 
 # MSE for the Linear Regression is 0.005425117
 
@@ -97,7 +96,10 @@ lm_nba.predict_2 = predict(lm_nba_2, newdata = nba[-train_nba_lm,])
 mean((lm_nba.predict_2-nba[-train_nba_lm,"PTS"])^2)
 
 # MSE for the Linear Regression is 0.00551884.
-# The MSE remained almost the same.
+# The MSE is now a bit higher, but almost the same.
+# The pruning didn't help, it actually made
+# the tree fit worse.
+
 
 
 # applying logistic regression
@@ -111,6 +113,6 @@ mean((yhat.log - nba[-train_nba ,"PTS" ])^2)
 # MSE for the Linear Regression is 0.005228678
 
 
-# Seems like the logistic regression is the best model
+# Seems like linear regression is the best model
 # to predict the amount of points a certain player will 
 # score based on other statistics in our data.
