@@ -1,0 +1,242 @@
+---
+title: "Home_Work_4"
+author: 'Group: BOB [Maryla Wozniak, Shakila Hoque, Elai Shalev, Matthew Perez]'
+date: "11/8/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Initial setup for following assignment
+### Clearing the slate
+In order to avoid potential issues while running the code it's best to start with a fresh slate 
+```{r}
+# THE FOLLOWING COMMAND WILL CLEAR ALL VARIABLES IN THE ENVIRONMENT
+# SAVE ANY FILES OR DATA YOU WANT TO HOLD ONTO BEFORE RUNNING IT 
+rm(list = ls())
+# THE FOLLOWING COMMAND CLEARS THE PLOT PANE AND MAY SAVE AND CLOSE 
+# ANY OPEN FILES YOU MAY BE EDITING
+# SAVE ANY FILES OR DATA YOU WANT TO HOLD ONTO BEFORE RUNNING IT 
+# IF NO PLOTS AOR VISUALS ARE RUNNING IT WILL PRINT AN ERROR, IGNORE THAT.
+dev.off()
+
+## NOTE: THE FOLLWOING SECTION WAS ADDED AFTER THE INITIAL 
+## INITIAL SUBMISSION OF THE PROJECT
+
+
+## Step by step instructions
+## Set the working dorectory to the location where the file was saved
+
+## Setp: 1
+## The 'rstudioapi' package allows you to access 
+## system information using the R language
+## the 'getSourceEditorContext' function allows you 
+## to retreive informaton about the source files locaiton 
+## this includes the file path without you having to
+## know where the fiole is. THe computer doest that work for you.
+
+## rstudioapi::getSourceEditorContext()
+
+
+## Step: 2
+## The line above is of type 'list' meaning there are multiple 
+## peices of information contained within. In order to get the
+## information we need we need to acess the file path 
+## under the 'path' acesor in the return of the functioncall
+## to do that we append '$path' this will print the file 
+## path including the name of the file.
+
+## rstudioapi::getSourceEditorContext()$path
+
+
+## Step: 3
+## In order to omit the name of the file from printing 
+## we can use the 'dirname' function that will ignore 
+## file names at the end of a file path and print
+## only the path leading up to where the file is saved.
+
+## dirname(rstudioapi::getSourceEditorContext()$path)
+
+
+## Step: 4
+## Lastly we use the 'setwd' comand to set the 
+## directory to the returned value of the entire function
+## call in order to set the working directory to the 
+## locaiton of the file without ever having to look for where
+## the file is actually stored.
+
+## setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
+## NOTE: THE LINES ABOVE ARE COMMENTED OUT IN ORDER TO 
+## PREVENT COMPILATION ERRORS IN 'RMD' AND OTHER 'TEX' BASED 
+## ENGINES. THIS IS A COMMAND IN ORDER TO SET YOUR WORKING 
+## DIRECTORY AND SHOULD BE COMMENTED OUT OR COMPLETELY 
+## OMITED FROM THE FINAL PRODUCT/PRESENTATION.
+```
+
+
+# Chapter: 08 
+## Questoin: 12 
+#### Apply boosting, bagging, and random forests to a data set of your choice. Be sure to fit the models on a training set and to evaluate their performance on a test set. 
+##### How accurate are the results compared to simple methods like linear or logistic regression? 
+##### Which of these approaches yields the best performance?
+
+
+First we need to set up our working environment before performing the analysys. 
+
+```{r}
+# IMPORT THE LIBR
+# IMPORT LIBRARIES
+suppressMessages(library(randomForest))
+suppressMessages(library(gbm))
+suppressMessages(library(tree))
+
+# READ DATA FROM FILE
+nba = read.csv("CIS_HW4.csv")
+
+# PRINT COLUMN NAMES FOR REFERENCE LATER 
+names(nba)
+
+# REMOVE SPECIFIC COLUMNS AFTER REVIEWING THE DATA
+nba = nba[,-c(1,2,3,7,11,14,17,18,21)]
+
+# ATTACH DATA COLUMN NAMES
+attach(nba)
+
+# OMIT OBSERVATIONS BELOW 6 MINUTES OF PLAY TIME
+nba = nba[nba$MP>6, ]
+
+# CHECK FOR "NA" VALUES
+colSums(is.na(nba))
+```
+
+THE INITIAL SETUP IS FULLY COMPELETE NO NOW WE CAN PARTITION THE DATA
+```{r}
+# SPLIT DATA SET INTO TESTING AND TRAINING
+
+# SET SEED TO SPECOOFC VALUE FOR REPRODUCTION OF WORK 
+set.seed(8) 
+
+# RANDOMLY SELECT ROWS FROM THE DATA SET
+# SIZE IS HALF THE NUMBER OF OBSERVATIONS IN THE DATA SET
+train_nba = sample(1:nrow(nba), nrow(nba)/2)
+
+```
+
+Now that the data has been partitioned we can applying boosting
+
+```{r}
+boost_nba = gbm(PTS~.-Tm, data = nba[train_nba,], distribution = "gaussian", n.trees = 5000, interaction.depth = 4)
+summary(boost_nba)
+par(mfrow = c(1,2))
+plot(boost_nba, i="FG")
+plot(boost_nba, i="FGA")
+
+yhat.boost = predict(boost_nba, newdata = nba[-train_nba,], n.trees = 5000)
+mean((yhat.boost - nba[-train_nba ,"PTS" ])^2)
+
+# MSE for boosting is 0.6475331
+
+```
+
+
+Now that the data has been partitioned we can applying bagging
+
+```{r}
+bag_nba = randomForest(PTS~.-Tm ,data = nba, subset = train_nba, mtry = 19, importance = T)
+yhat.bag = predict(bag_nba, newdata = nba[-train_nba,])
+plot(yhat.bag, nba[-train_nba,"PTS"])
+abline(0,1, col = 5)
+mean((yhat.bag - nba[-train_nba ,"PTS" ])^2)
+
+#MSE for bagging is 0.3524371
+```
+
+```{r}
+# applying random forest, cross-validating, and pruning the tree
+
+tree_nba = tree(PTS~.-Tm, nba , subset = train_nba)
+summary(tree_nba)
+plot(tree_nba)
+text(tree_nba, pretty = 0)
+
+cv_nba = cv.tree(tree_nba)
+plot(cv_nba$size, cv_nba$dev, type = 'b')
+cv_nba
+
+pruning_nba = prune.tree(tree_nba, best = 8)
+plot(pruning_nba)
+text(pruning_nba, pretty = 0)
+
+yhat.tree = predict(tree_nba, newdata = nba[-train_nba,])
+plot(yhat.tree, nba[-train_nba,"PTS"])               
+abline(0,1, col = 5)
+mean((yhat.tree-nba[-train_nba,"PTS"])^2)
+
+# MSE for the decision tree is 1.807063
+```
+
+
+
+
+```{r}
+# applying multiple linear regression
+par(mfrow = c(2,2))
+lm_nba = lm(PTS~.-Tm, nba[train_nba,])
+plot(lm_nba)
+summary(lm_nba)
+lm_nba.predict = predict(lm_nba, newdata = nba[-train_nba,])
+lm_nba.predict[1:5]
+mean((lm_nba.predict-nba[-train_nba,"PTS"])^2)
+
+# MSE for the Linear Regression is 0.005425117
+
+# We noted that 3 obs. are outliers 
+# in the training data (#11, 14, 42).
+# in the residuals vs. leverage plot we see that
+# 14 and 42 influence the model, so we will omit
+# them and see if it fits better.
+
+train_nba_lm = train_nba[-c(14,42)]
+lm_nba_2 = lm(PTS~.-Tm, nba[train_nba_lm,])
+plot(lm_nba_2)
+lm_nba.predict_2 = predict(lm_nba_2, newdata = nba[-train_nba_lm,])
+mean((lm_nba.predict_2-nba[-train_nba_lm,"PTS"])^2)
+
+# MSE for the Linear Regression is 0.00551884.
+# The MSE is now a bit higher, but almost the same.
+# The pruning didn't help, it actually made
+# the tree fit worse.
+```
+
+
+# applying logistic regression
+
+```{r}
+log_nba = glm(PTS~.-Tm, data = nba[train_nba,])
+yhat.log = predict(log_nba, newdata = nba[-train_nba,])
+plot(yhat.log, nba[-train_nba,"PTS"])
+abline(0,1, col = 5)
+mean((yhat.log - nba[-train_nba ,"PTS" ])^2)
+
+# MSE for the Linear Regression is 0.005228678
+```
+
+## FINAL COMMENTS:
+Seems like linear regression is the best model to predict the amount of points a certain player will score based on other statistics in our data. This is likely the case because the data we usef for the regressionsare numeric and we omitted the only catagorical value in the dataset that would have had a string effect on the results (Team).
+
+
+
+## Chapter: 09
+## Question: 04
+## Generate data: ( a two class system )
+# 1) 100 observations 
+# 2) 2 visible non-linear variables for the two classes 
+
+## TASK: Show the following and provide graphs and plots as evodence
+# A support vector with a polynomial kernal or
+# a rafial kernial will out perform a support vector classifier
