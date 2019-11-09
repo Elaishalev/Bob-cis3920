@@ -24,12 +24,23 @@ data = na.omit(data)
 colSums(is.na(data))
 
 # CHECK THE STATISTICAL SUMMARIES OF EACH COLUM AND REMOVE EXTRANEOUS VALUES 
-# CHECK RANGE OF MINIMUM NIGHTS 
+
+## CHECK RANGE OF MINIMUM NIGHTS 
+### check max range of values stored 
 range(data$minimum_nights)
+### check number of records wit hminimum nights over one year
 data[data$minimum_nights > 365, ]
 data = data[!(data$minimum_nights>365) , ]
-
 range(data$minimum_nights)
+
+
+
+## CHECK PRICE RANGE OF "price" COLUMN
+range(data$price)
+### CHECK ROWS FOR ANY WEIRD VALUES
+data[ !(data$price == 0)  , ]
+### OMIT RECORDS WITH A PRICE OF $0.00
+data = data[ !(data$price == 0)  , ]
 
 
 # plotting on a map
