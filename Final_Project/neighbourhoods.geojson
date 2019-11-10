@@ -1,0 +1,249 @@
+{
+  "401b42667f4f82bc10d59f2e3ed96b50": {
+    "version": "0.12.2",
+    "title": "Bokeh Figure",
+    "roots": {
+      "root_ids": [
+        "19e9475f939f6f29c4e192603cd8a486"
+      ],
+      "references": [
+        {
+          "type": "GMapPlot",
+          "id": "19e9475f939f6f29c4e192603cd8a486",
+          "attributes": {
+            "id": "19e9475f939f6f29c4e192603cd8a486",
+            "plot_width": 600,
+            "plot_height": 600,
+            "sizing_mode": "scale_both",
+            "x_range": {
+              "type": "Range1d",
+              "id": "9a486cf2d8e4b1dca9af89a97773c540"
+            },
+            "y_range": {
+              "type": "Range1d",
+              "id": "37b20dad06799ec05ef335853ba7d435"
+            },
+            "left": [
+              {
+                "type": "LinearAxis",
+                "id": "1e83fb286ded4edee7abc2daae368b4e"
+              }
+            ],
+            "below": [
+              {
+                "type": "LinearAxis",
+                "id": "2a1551d9dd2e3bee4bc9e8fb0c6e068e"
+              }
+            ],
+            "right": [],
+            "above": [],
+            "renderers": [
+              {
+                "type": "LinearAxis",
+                "id": "2a1551d9dd2e3bee4bc9e8fb0c6e068e"
+              },
+              {
+                "type": "LinearAxis",
+                "id": "1e83fb286ded4edee7abc2daae368b4e"
+              }
+            ],
+            "extra_y_ranges": {},
+            "extra_x_ranges": {},
+            "tags": [],
+            "min_border_left": 4,
+            "min_border_right": 4,
+            "min_border_top": 4,
+            "min_border_bottom": 4,
+            "lod_threshold": null,
+            "toolbar": {
+              "type": "Toolbar",
+              "id": "e1ceb672306f70c672d034b8cae90781"
+            },
+            "tool_events": {
+              "type": "ToolEvents",
+              "id": "471f77486379070c2872b98b04a98a58"
+            },
+            "api_key": "AIzaSyBNDq_9nG0AR8smomFdipJ2WWBC28AWbWU",
+            "map_options": {
+              "lat": 40.7288,
+              "lng": -73.9513,
+              "zoom": 11,
+              "styles": "[{\"featureType\":\"administrative\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#444444\"}]},{\"featureType\":\"landscape\",\"elementType\":\"all\",\"stylers\":[{\"color\":\"#f2f2f2\"}]},{\"featureType\":\"poi\",\"elementType\":\"all\",\"stylers\":[{\"visibility\":\"off\"}]},{\"featureType\":\"road\",\"elementType\":\"all\",\"stylers\":[{\"saturation\":-100},{\"lightness\":45}]},{\"featureType\":\"road.highway\",\"elementType\":\"all\",\"stylers\":[{\"visibility\":\"simplified\"}]},{\"featureType\":\"road.arterial\",\"elementType\":\"labels.icon\",\"stylers\":[{\"visibility\":\"off\"}]},{\"featureType\":\"transit\",\"elementType\":\"all\",\"stylers\":[{\"visibility\":\"off\"}]},{\"featureType\":\"water\",\"elementType\":\"all\",\"stylers\":[{\"color\":\"#46bcec\"},{\"visibility\":\"on\"}]}]"
+            }
+          }
+        },
+        {
+          "type": "Toolbar",
+          "id": "e1ceb672306f70c672d034b8cae90781",
+          "attributes": {
+            "id": "e1ceb672306f70c672d034b8cae90781",
+            "tags": [],
+            "active_drag": "auto",
+            "active_scroll": "auto",
+            "active_tap": "auto",
+            "tools": [
+              {
+                "type": "PanTool",
+                "id": "e9defb1ec18bff0325385bb1d5d8e95c"
+              },
+              {
+                "type": "WheelZoomTool",
+                "id": "28a4b2437451910a09f95a6fa2acbef4"
+              },
+              {
+                "type": "SaveTool",
+                "id": "ce73061b69055e1bc5a6a465ff5edf25"
+              }
+            ],
+            "logo": null
+          }
+        },
+        {
+          "type": "PanTool",
+          "id": "e9defb1ec18bff0325385bb1d5d8e95c",
+          "attributes": {
+            "id": "e9defb1ec18bff0325385bb1d5d8e95c",
+            "tags": [],
+            "plot": {
+              "type": "GMapPlot",
+              "id": "19e9475f939f6f29c4e192603cd8a486"
+            },
+            "dimensions": ["width", "height"]
+          }
+        },
+        {
+          "type": "ToolEvents",
+          "id": "471f77486379070c2872b98b04a98a58",
+          "attributes": {
+            "id": "471f77486379070c2872b98b04a98a58",
+            "tags": []
+          },
+          "geometries": []
+        },
+        {
+          "type": "WheelZoomTool",
+          "id": "28a4b2437451910a09f95a6fa2acbef4",
+          "attributes": {
+            "id": "28a4b2437451910a09f95a6fa2acbef4",
+            "tags": [],
+            "plot": {
+              "type": "GMapPlot",
+              "id": "19e9475f939f6f29c4e192603cd8a486"
+            },
+            "dimensions": ["width", "height"]
+          }
+        },
+        {
+          "type": "SaveTool",
+          "id": "ce73061b69055e1bc5a6a465ff5edf25",
+          "attributes": {
+            "id": "ce73061b69055e1bc5a6a465ff5edf25",
+            "tags": [],
+            "plot": {
+              "type": "GMapPlot",
+              "id": "19e9475f939f6f29c4e192603cd8a486"
+            }
+          }
+        },
+        {
+          "type": "Range1d",
+          "id": "9a486cf2d8e4b1dca9af89a97773c540",
+          "attributes": {
+            "id": "9a486cf2d8e4b1dca9af89a97773c540",
+            "tags": [],
+            "start": -81.9789,
+            "end": 48.7564
+          }
+        },
+        {
+          "type": "Range1d",
+          "id": "37b20dad06799ec05ef335853ba7d435",
+          "attributes": {
+            "id": "37b20dad06799ec05ef335853ba7d435",
+            "tags": [],
+            "start": -81.9789,
+            "end": 48.7564
+          }
+        },
+        {
+          "type": "LinearAxis",
+          "id": "2a1551d9dd2e3bee4bc9e8fb0c6e068e",
+          "attributes": {
+            "id": "2a1551d9dd2e3bee4bc9e8fb0c6e068e",
+            "tags": [],
+            "plot": {
+              "type": "GMapPlot",
+              "id": "19e9475f939f6f29c4e192603cd8a486"
+            },
+            "axis_label": "",
+            "formatter": {
+              "type": "BasicTickFormatter",
+              "id": "98c61e2e63933145bc85bae607019b0f"
+            },
+            "ticker": {
+              "type": "BasicTicker",
+              "id": "fd4c6897b17844fe472ac3eb38bd335c"
+            },
+            "visible": false
+          }
+        },
+        {
+          "type": "BasicTickFormatter",
+          "id": "98c61e2e63933145bc85bae607019b0f",
+          "attributes": {
+            "id": "98c61e2e63933145bc85bae607019b0f",
+            "tags": []
+          }
+        },
+        {
+          "type": "BasicTicker",
+          "id": "fd4c6897b17844fe472ac3eb38bd335c",
+          "attributes": {
+            "id": "fd4c6897b17844fe472ac3eb38bd335c",
+            "tags": [],
+            "num_minor_ticks": 5
+          }
+        },
+        {
+          "type": "LinearAxis",
+          "id": "1e83fb286ded4edee7abc2daae368b4e",
+          "attributes": {
+            "id": "1e83fb286ded4edee7abc2daae368b4e",
+            "tags": [],
+            "plot": {
+              "type": "GMapPlot",
+              "id": "19e9475f939f6f29c4e192603cd8a486"
+            },
+            "axis_label": "",
+            "formatter": {
+              "type": "BasicTickFormatter",
+              "id": "45a36c5691a91362e5797395e39f2989"
+            },
+            "ticker": {
+              "type": "BasicTicker",
+              "id": "92b5c8268478b529dbb7101d92982572"
+            },
+            "visible": false
+          }
+        },
+        {
+          "type": "BasicTickFormatter",
+          "id": "45a36c5691a91362e5797395e39f2989",
+          "attributes": {
+            "id": "45a36c5691a91362e5797395e39f2989",
+            "tags": []
+          }
+        },
+        {
+          "type": "BasicTicker",
+          "id": "92b5c8268478b529dbb7101d92982572",
+          "attributes": {
+            "id": "92b5c8268478b529dbb7101d92982572",
+            "tags": [],
+            "num_minor_ticks": 5
+          }
+        }
+      ]
+    }
+  }
+} 
