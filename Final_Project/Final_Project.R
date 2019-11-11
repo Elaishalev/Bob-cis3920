@@ -48,14 +48,26 @@ data = data[!(data$minimum_nights>365) , ]
 ### CHECK RANGE OF VALUES TO CONFIRM OBSERVATIONS WERE OMITED
 range(data$minimum_nights)
 
+# ELAI IS WORKING ON SAMPLE THE DATA
+##################################################
+rep_func = function(data, borough){
+  listings = data[data$neighbourhood_group== borough,]
+  entire = listings[listings$room_type=="Entire home/apt",]
+  hotel = listings[listings$room_type=="Hotel room",]
+  private = listings[listings$room_type=="Private room",]
+  shared = listings[listings$room_type=="Shared room",]
+  sample = rbind(
+    entire[sample(1:nrow(entire), ceiling(nrow(entire)*.01)), ],
+    hotel[sample(1:nrow(hotel), ceiling(nrow(hotel)*.01)), ],
+    private[sample(1:nrow(private), ceiling(nrow(private)*.01)), ],
+    shared[sample(1:nrow(shared), ceiling(nrow(shared)*.01)), ]
+  )  
+  rm(listings, entire, hotel, private, shared)
+  return(sample)
+} 
 
-
-
-# ELAI IS WORKING ON IT
-# SAMPLE THE DATA
-sample_size = nrow(data) / (nrow(data) * (0.05)^2 + 1 )
-sample_size
-sample__rows = sample(1:nrow(data), sample_size)
+sample_size = rbind(rep_func(data, "Brooklyn"), rep_func(data, "Bronx"), rep_func(data, "Manhattan"), rep_func(data, "Queens"), rep_func(data, "Staten Island"))
+##################################################
 
 
 
