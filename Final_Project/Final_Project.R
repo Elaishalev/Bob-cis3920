@@ -66,60 +66,102 @@ rep_func = function(data, borough){
   return(sample)
 } 
 
-sample_size = rbind(rep_func(data, "Brooklyn"), rep_func(data, "Bronx"), rep_func(data, "Manhattan"), rep_func(data, "Queens"), rep_func(data, "Staten Island"))
+sample_size = rbind(
+  rep_func(data, "Brooklyn"), 
+  rep_func(data, "Bronx"), 
+  rep_func(data, "Manhattan"), 
+  rep_func(data, "Queens"), 
+  rep_func(data, "Staten Island")
+  )
 ##################################################
 
+# QUESITON ONE (Visual data exploration)
+## WHAT IS THE DISTRIBUTION OF DIFFERENT 
+## LISTING TYPES IN EACH BOROUGH?
 
-
-pairs(data[sample__rows,-c(1:4, 6:8,13:14 )], lower.panel = NULL)
-
-# PLOTTING BAR PLOTS BY BOROUGH
-suppressMessages(
-figure(legend_location = ) %>% 
-  ly_bar(data$neighbourhood_group, color = data$room_type, data = data, position = "dodge", hover = TRUE) %>%
-  theme_axis("x", major_label_orientation = 45 ) %>%
-  x_axis(label = "Borough") %>%
-  y_axis(label = "Number of listings")
-)
-
-# PLOTTING BAR PLOTS BY BOROUGH
-
+### PLOTTING LISTING TYPES BY BOROUGH 
 suppressMessages(
   figure(legend_location = ) %>% 
-    ly_bar(data$neighbourhood, data = data[ data$neighbourhood_group == "Brooklyn", ], position = "dodge", hover = TRUE) %>%
+    ly_bar(data$neighbourhood_group, color = data$room_type, data = data, position = "dodge", hover = TRUE) %>%
     theme_axis("x", major_label_orientation = 45 ) %>%
-    x_axis(label = "Neighborhood") %>%
+    x_axis(label = "Borough") %>%
     y_axis(label = "Number of listings")
 )
 
+### GOEPLOTING 
+g_map_key = "AIzaSyBNDq_9nG0AR8smomFdipJ2WWBC28AWbWU"
+polygons = geojsonR::Dump_From_GeoJson("neighbourhoods.geojson")
+suppressWarnings(
+  gmap( lat = mean(data$latitude), lng = mean(data$longitude), zoom = 11, width = 600, height = 600, map_style = gmap_style("blue_water"), api_key = g_map_key)
+)
+
+
+
+# QUESITON TWO: (Summary and conclusions)
+## Which boroughs and neighborhoods have the 
+## most hosts with multiple listings? 
+
+
+
+# QUESITON THREE:  (multiple linear regression)
+## Predict the price of listings in different 
+## boroughs based on other attributes?
+
+
+
+# QUESITON FOUR:  (LDA/QDA)
+## Predict the most expensive type of listing?
+
+# NOTE: CURRENT DETERMINANT TOP 10%
+
+
+### ADD DETERMINANT DATA SERIES TO THE TABLE
+### THIS WILL BE DEFINED AS THE TOP __% OF PRICES 
+### OF EACH LISTING TYPE  
+data["Pricy_01"] = 0
+
 unique(data$neighbourhood_group)
-nrow(data[ data$neighbourhood_group == "Manhattan"  ,  ])
-nrow(data[ data$neighbourhood_group == "Brooklyn"  ,  ])
-nrow(data[ data$neighbourhood_group == "Queens"  ,  ])
-nrow(data[ data$neighbourhood_group == "Staten Island"  ,  ])
-nrow(data[ data$neighbourhood_group == "Bronx"  ,  ])
+unique(data$room_type)
+
+# DEFINE MANHATTAN
+summary(data[ which( data$neighbourhood_group == "Manhattan"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Manhattan"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Manhattan"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Manhattan"), "price" ])
+
+# DEFINE BROOKLYN
+summary(data[ which( data$neighbourhood_group == "Brooklyn"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Brooklyn"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Brooklyn"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Brooklyn"), "price" ])
+
+# DEFINE QUEENS
+summary(data[ which( data$neighbourhood_group == "Queens"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Queens"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Queens"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Queens"), "price" ])
 
 
-info = data.frame(table(data[sample__rows, ]$room_type, data[sample__rows, ]$neighbourhood_group, data[sample__rows, ]$price))
-colnames(info) = c("Listing_type", "Borough", "Price", "Number_of_listings")
-unique(info$Listing_type)
-unique(info$Borough)
+# DEFINE STATEN ISLAND
+summary(data[ which( data$neighbourhood_group == "Staten Island"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Staten Island"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Staten Island"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Staten Island"), "price" ])
 
-info[ info$Borough == "Brooklyn" , ]
-info[ info$Borough == "Bronx" , ""]
-info[ info$Borough == "Manhattan" , ]
-info[ info$Borough == "Queens" , ]
-info[ info$Borough == "Staten Island" , ]
+# DEFINE BRONX
+summary(data[ which( data$neighbourhood_group == "Bronx"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Bronx"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Bronx"), "price" ])
+summary(data[ which( data$neighbourhood_group == "Bronx"), "price" ])
+
+y_formula = "Pricy_01 ~ "
+
+# QUESITON FIVE:
+## Is  there a the relationship between minimum 
+## number of  nights   and apartment availability 
+## during calendar year? 
 
 
-
-
-# g_map_key = "AIzaSyBNDq_9nG0AR8smomFdipJ2WWBC28AWbWU"
-# polygons = geojsonR::Dump_From_GeoJson("neighbourhoods.geojson")
-# suppressWarnings(
-#   gmap( lat = mean(data$latitude), lng = ,mean(data$longitude), zoom = 11, width = 600, height = 600, map_style = gmap_style("blue_water"), api_key = g_map_key) %>%
-#     
-# )
 
 
 
