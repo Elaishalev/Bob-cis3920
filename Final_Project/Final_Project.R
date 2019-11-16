@@ -5,7 +5,7 @@ dev.off()
 # Set the working dorectory to the location where the file was saved
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-suppressMessages(library(rbokeh))
+suppressMessages(library('rbokeh'))
 
 # READ THE DATA
 airbnb_data = read.csv("listings_summary.csv")
@@ -103,17 +103,9 @@ suppressWarnings(
 ## Which boroughs  have the 
 ## most hosts with multiple listings? 
 
-plot (neighbourhood_group,   calculated_host_listings_count)
-
-max(data$calculated_host_listings_count)
-users_all_listings[which(users_all_listings$Freq==max(users_all_listings$Freq)), ]
-
-plot (neighbourhood_group="Manhattan",calculated_host_listings_count)
-
-
 users_all_listings = data.frame(
   table(
-    data[data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]
+    airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]
   )
 )
 users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
@@ -162,6 +154,13 @@ barplot(y,main="Number of Multiple Listings ",
         names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
 
 
+plot (neighbourhood_group,   calculated_host_listings_count)
+
+max(airbnb_data$calculated_host_listings_count)
+users_all_listings[which(users_all_listings$Freq==max(users_all_listings$Freq)), ]
+
+plot (neighbourhood_group=="Manhattan",calculated_host_listings_count)
+
 graphics.off()
 
 
@@ -169,11 +168,11 @@ graphics.off()
 ## Predict the price of listings in different 
 ## boroughs based on other attributes?
 
-as.Date(sample_size$last_review)
+as.Date(sample_data$last_review)
 set.seed(323)
-sample_split = sample(1:nrow(sample_size), 492*.75)
-sample_training = sample_size[sample_split,-c(2,3,4,6,13)]
-sample_testing = sample_size[-sample_split,-c(2,3,4,6,13)]
+sample_split = sample(1:nrow(sample_data), 492*.75)
+sample_training = sample_data[sample_split,-c(2,3,4,6,13)]
+sample_testing = sample_data[-sample_split,-c(2,3,4,6,13)]
 
 lin.reg_model = lm(price~.,sample_training)
 lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
@@ -215,6 +214,7 @@ hotel_room = airbnb_data[airbnb_data$room_type == "Hotel room", ]
 htl_rm = quantile( hotel_room$price , prob=1- 10 / 100)
 hotel_room[ which( hotel_room$price > priv_rm ) , "Pricy_01"] = 1
 
+qda_1 = 
 
 # QUESITON FIVE:
 ## Is  there a the relationship between minimum 
