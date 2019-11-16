@@ -107,7 +107,26 @@ suppressWarnings(
 ## Predict the price of listings in different 
 ## boroughs based on other attributes?
 
+as.Date(sample_size$last_review)
+set.seed(323)
+sample_split = sample(1:nrow(sample_size), 492*.75)
+sample_training = sample_size[sample_split,-c(2,3,4,6,13)]
+sample_testing = sample_size[-sample_split,-c(2,3,4,6,13)]
 
+lin.reg_model = lm(price~.,sample_training)
+lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
+plot(lin.reg_prediction, sample_testing[,6])
+summary(lin.reg_model)
+abline(0,1)
+mse_lin.reg = mean((lin.reg_prediction - sample_testing[,6])^2)
+mse_lin.reg
+plot(density(lin.reg_prediction))
+cor(lin.reg_prediction,sample_testing[,6])
+summary(lin.reg_model)
+sqrt(mse_lin.reg)
+
+par(mfrow=c(2,2))
+plot(lin.reg_model)
 
 # QUESITON FOUR:  (LDA/QDA)
 ## Predict the most expensive type of listing?
@@ -161,7 +180,7 @@ y_formula = "Pricy_01 ~ "
 ## number of  nights   and apartment availability 
 ## during calendar year? 
 
-
+cor(sample_size$minimum_nights, sample_size$availability_365)
 
 
 
