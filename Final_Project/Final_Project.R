@@ -98,9 +98,69 @@ suppressWarnings(
 
 
 # QUESITON TWO: (Summary and conclusions)
-## Which boroughs and neighborhoods have the 
+## Which boroughs  have the 
 ## most hosts with multiple listings? 
 
+plot (neighbourhood_group,   calculated_host_listings_count)
+
+max(data$calculated_host_listings_count)
+users_all_listings[which(users_all_listings$Freq==max(users_all_listings$Freq)), ]
+
+plot (neighbourhood_group="Manhattan",calculated_host_listings_count)
+
+
+users_all_listings = data.frame(
+  table(
+    data[data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]
+  )
+)
+users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
+users_all_listings[1:5,]
+
+multiple_Bronx=nrow( 
+  users_all_listings[
+    which(users_all_listings$neighbourhood_group == "Bronx" & users_all_listings$Freq > 1)
+                     , ]
+  )
+multiple_Bronx
+
+multiple_Queens=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Queens" &users_all_listings$Freq > 1 ), ])
+multiple_Brooklyn=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Brooklyn"&users_all_listings$Freq > 1 ), ])
+multiple_StatenIsland=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Staten Island"&users_all_listings$Freq > 1 ), ])
+multiple_Manhattan=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Manhattan"&users_all_listings$Freq > 1 ), ])
+
+
+all_Bronx=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Bronx", ])
+all_Queens=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Queens", ])
+all_Brooklyn=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Brooklyn", ])
+all_StatenIsland=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Staten Island", ])
+all_Manhattan=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Manhattan", ])
+ 
+Bronx_percent=(multiple_Bronx / all_Bronx)*100
+Queens_percent=(multiple_Queens/all_Queens)*100
+Brooklyn_percent=(multiple_Brooklyn/all_Brooklyn)*100
+Manhattan_percent=(multiple_Manhattan/all_Manhattan)*100
+StatenIsland_percent=(multiple_StatenIsland/all_StatenIsland)*100
+
+Queens_percent
+Brooklyn_percent
+Manhattan_percent
+StatenIsland_percent
+Brooklyn_percent
+par(mfrow=c(2,2))
+
+x=c(Queens_percent, Brooklyn_percent, Manhattan_percent, StatenIsland_percent, 
+    Bronx_percent)
+
+barplot(x,main="Percentage distribution of Multiple Listings ",
+        names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
+
+y=c(multiple_Queens, multiple_Brooklyn, multiple_Manhattan, multiple_StatenIsland, multiple_Bronx)
+barplot(y,main="Number of Multiple Listings ",
+        names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
+
+
+graphics.off()
 
 
 # QUESITON THREE:  (multiple linear regression)
@@ -161,9 +221,13 @@ y_formula = "Pricy_01 ~ "
 ## number of  nights   and apartment availability 
 ## during calendar year? 
 
+graphics.off()
+bb=lm(minimum_nights~availability_365,sample_size)
+summary(bb)
+cor(sample_size$minimum_nights,sample_size$availability_365 )
+coef(bb)
 
+plot(sample_size$availability_365,sample_size$minimum_nights)
 
-
-
-
+abline(bb,col="red")
 
