@@ -2,6 +2,8 @@
 
 rm(list = ls())
 dev.off()
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
 suppressMessages(library(randomForest))
 library(gbm)
 library(tree)
