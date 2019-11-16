@@ -49,7 +49,7 @@ airbnb_data = airbnb_data[!(airbnb_data$minimum_nights>365) , ]
 ### CHECK RANGE OF VALUES TO CONFIRM OBSERVATIONS WERE OMITED
 range(airbnb_data$minimum_nights)
 
-# ELAI IS WORKING ON SAMPLE THE DATA
+# ELAI CARRIED THIS FUCKING TEAM
 ##################################################
 rep_func = function(data, borough){
   listings = data[data$neighbourhood_group== borough,]
@@ -57,6 +57,7 @@ rep_func = function(data, borough){
   hotel = listings[listings$room_type=="Hotel room",]
   private = listings[listings$room_type=="Private room",]
   shared = listings[listings$room_type=="Shared room",]
+  set.seed(666) # because this is the devils work
   sample = rbind(
     entire[sample(1:nrow(entire), ceiling(nrow(entire)*.01)), ],
     hotel[sample(1:nrow(hotel), ceiling(nrow(hotel)*.01)), ],
@@ -76,9 +77,14 @@ sample_data = rbind(
   )
 ##################################################
 
+
+
+
 # QUESITON ONE (Visual data exploration)
 ## WHAT IS THE DISTRIBUTION OF DIFFERENT 
 ## LISTING TYPES IN EACH BOROUGH?
+
+### NOTE: MOVE THE LEGEND OF THE PLOT
 
 ### PLOTTING LISTING TYPES BY BOROUGH 
 suppressMessages(
@@ -97,39 +103,31 @@ suppressWarnings(
         width = 600, height = 600, map_style = gmap_style("blue_water"), api_key = g_map_key)
 )
 
+### NOTE: ADDITIONAL PLOTS
+## SHOW THE HIGHEST AND LOWEST BY NEIGHBORHOOD (TOP 3)
+
 
 
 # QUESITON TWO: (Summary and conclusions)
 ## Which boroughs  have the 
 ## most hosts with multiple listings? 
 
-users_all_listings = data.frame(
-  table(
-    airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]
-  )
-)
+users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]))
 users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
 users_all_listings[1:5,]
 
-multiple_Bronx=nrow( 
-  users_all_listings[
-    which(users_all_listings$neighbourhood_group == "Bronx" & users_all_listings$Freq > 1)
-                     , ]
-  )
-multiple_Bronx
-
+multiple_Bronx=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Bronx" & users_all_listings$Freq > 1), ])
 multiple_Queens=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Queens" &users_all_listings$Freq > 1 ), ])
 multiple_Brooklyn=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Brooklyn"&users_all_listings$Freq > 1 ), ])
 multiple_StatenIsland=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Staten Island"&users_all_listings$Freq > 1 ), ])
 multiple_Manhattan=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Manhattan"&users_all_listings$Freq > 1 ), ])
-
 
 all_Bronx=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Bronx", ])
 all_Queens=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Queens", ])
 all_Brooklyn=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Brooklyn", ])
 all_StatenIsland=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Staten Island", ])
 all_Manhattan=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Manhattan", ])
- 
+
 Bronx_percent=(multiple_Bronx / all_Bronx)*100
 Queens_percent=(multiple_Queens/all_Queens)*100
 Brooklyn_percent=(multiple_Brooklyn/all_Brooklyn)*100
@@ -141,22 +139,21 @@ Brooklyn_percent
 Manhattan_percent
 StatenIsland_percent
 Brooklyn_percent
-par(mfrow=c(2,2))
 
-x=c(Queens_percent, Brooklyn_percent, Manhattan_percent, StatenIsland_percent, 
-    Bronx_percent)
+x=c(Queens_percent, Brooklyn_percent, Manhattan_percent, StatenIsland_percent,Bronx_percent)
+y=c(multiple_Queens, multiple_Brooklyn, multiple_Manhattan, multiple_StatenIsland, multiple_Bronx)
 
 barplot(x,main="Percentage distribution of Multiple Listings ",
         names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
-
-y=c(multiple_Queens, multiple_Brooklyn, multiple_Manhattan, multiple_StatenIsland, multiple_Bronx)
 barplot(y,main="Number of Multiple Listings ",
         names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
 
-
+### NOTE: modify to show the count of people with multiple listings rather then plotting the value 
+### in the "calculated_host_listings_count" for each observation
 plot (neighbourhood_group,   calculated_host_listings_count)
 
 max(airbnb_data$calculated_host_listings_count)
+
 users_all_listings[which(users_all_listings$Freq==max(users_all_listings$Freq)), ]
 
 plot (neighbourhood_group=="Manhattan",calculated_host_listings_count)
@@ -168,7 +165,7 @@ graphics.off()
 ## Predict the price of listings in different 
 ## boroughs based on other attributes?
 
-as.Date(sample_data$last_review)
+sample_data$last_review = as.Date(sample_data$last_review)
 set.seed(323)
 sample_split = sample(1:nrow(sample_data), 492*.75)
 sample_training = sample_data[sample_split,-c(2,3,4,6,13)]
@@ -176,6 +173,10 @@ sample_testing = sample_data[-sample_split,-c(2,3,4,6,13)]
 
 lin.reg_model = lm(price~.,sample_training)
 lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
+
+### NOTE: FIGURE OUT HOW TO OMMIT OUTLIERS
+
+
 plot(lin.reg_prediction, sample_testing[,6])
 summary(lin.reg_model)
 abline(0,1)
@@ -189,10 +190,15 @@ sqrt(mse_lin.reg)
 par(mfrow=c(2,2))
 plot(lin.reg_model)
 
+### NOTE: RUN REGRESSION TREE'S 
+
+
+
 # QUESITON FOUR:  (LDA/QDA)
 ## Predict the most expensive type of listing
 ## NOTE: CURRENT DETERMINANT TOP 10%
 ### DEFINE COMPARISON
+
 airbnb_data["Pricy_01"] = 0
 
 private_room = airbnb_data[airbnb_data$room_type == "Private room", ]
@@ -214,19 +220,23 @@ hotel_room = airbnb_data[airbnb_data$room_type == "Hotel room", ]
 htl_rm = quantile( hotel_room$price , prob=1- 10 / 100)
 hotel_room[ which( hotel_room$price > priv_rm ) , "Pricy_01"] = 1
 
-qda_1 = 
+dummy = MASS::qda(hotel_room$Pricy_01~., data = hotel_room)
 
-# QUESITON FIVE:
-## Is  there a the relationship between minimum 
-## number of  nights   and apartment availability 
-## during calendar year? 
+# QUESITON FIVE: (ON HOLD)  
+## Is  there a the relationship between the number 
+## of reviews and borough? In which borough's are guests 
+## most likely to leave a review?
+
+### NOTE: DO SOMETHING NEW 
+
 
 graphics.off()
-bb=lm(minimum_nights~availability_365,sample_size)
+bb=lm(minimum_nights~availability_365,sample_data)
 summary(bb)
-cor(sample_size$minimum_nights,sample_size$availability_365 )
+cor(sample_data$minimum_nights,sample_data$availability_365 )
 coef(bb)
 
-plot(sample_size$availability_365,sample_size$minimum_nights)
+plot(sample_data$availability_365,sample_data$minimum_nights)
 
 abline(bb,col="red")
+
