@@ -139,32 +139,24 @@ airbnb_data["Pricy_01"] = 0
 private_room = airbnb_data[airbnb_data$room_type == "Private room", ]
 priv_rm = quantile(private_room$price, prob=1- 10 / 100)
 private_room[ which( private_room$price > priv_rm ) , "Pricy_01"] = 1
-priv_rm
-range(private_room$price)
-nrow(private_room[private_room$Pricy_01==1,])
-# MASS::qda(private_room$Pricy_01~private_room$)
 
-airbnb_data[which(airbnb_data[ airbnb_data$room_type == "Private room" , "price"] > priv_rm), ] = 1
 
 home_apt = airbnb_data[airbnb_data$room_type == "Entire home/apt", ]
-ent_apt = quantile(home_apt[ which( home_apt$room_type == "Entire home/apt"), "price" ], prob=1- 10 / 100)
+ent_apt = quantile(home_apt$price , prob=1- 10 / 100)
 home_apt[ which( home_apt$price > priv_rm ) , "Pricy_01"] = 1
 
 
 shared_room = airbnb_data[airbnb_data$room_type == "Shared room", ]
-shrd_rm = quantile(airbnb_data[ which( airbnb_data$room_type == "Shared room"), "price" ], prob=1- 10 / 100)
+shrd_rm = quantile(shared_room$price , prob=1- 10 / 100)
 shared_room[ which( shared_room$price > priv_rm ) , "Pricy_01"] = 1
 
 
 hotel_room = airbnb_data[airbnb_data$room_type == "Hotel room", ]
-htl_rm = quantile(airbnb_data[ which( airbnb_data$room_type == "Hotel room"), "price" ], prob=1- 10 / 100)
+htl_rm = quantile( hotel_room$price , prob=1- 10 / 100)
 hotel_room[ which( hotel_room$price > priv_rm ) , "Pricy_01"] = 1
-
 
 
 # QUESITON FIVE:
 ## Is  there a the relationship between minimum 
 ## number of  nights   and apartment availability 
 ## during calendar year? 
-
-
