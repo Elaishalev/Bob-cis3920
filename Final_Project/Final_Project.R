@@ -15,6 +15,7 @@ suppressMessages(library('plyr'))
 # READ THE DATA
 airbnb_data = read.csv("listings_summary.csv")
 colnames(airbnb_data)
+row.names(airbnb_data)
 suppressMessages(attach(airbnb_data))
 
 # CLEANING THE DATA
@@ -116,8 +117,35 @@ suppressWarnings(
 # QUESITON TWO: (Summary and conclusions)
 ## Which boroughs  have the 
 ## most hosts with multiple listings? 
+users_all_listings_digin = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group","neighbourhood")]))
+users_all_listings_digin = users_all_listings_digin[users_all_listings_digin$Freq > 0,]
+users_all_listings_digin[1:8,]
 
-users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]))
+borough=c("Brooklyn","Manhattan","Queens","Bronx","Staten Island")
+
+fuckthis=users_all_listings_digin[FALSE,]
+
+
+for (i in borough) {
+  bob=users_all_listings_digin[ which(users_all_listings_digin$neighbourhood_group == i & users_all_listings_digin$Freq == max(users_all_listings_digin[users_all_listings_digin$neighbourhood_group == i,"Freq"])) , ]
+  fuckthis=rbind(fuckthis,bob)
+}
+#fuckthis is a table containiing list of max for each neighborghood
+fuckthis [1:6,]
+
+fuckno=users_all_listings [FALSE,]
+
+for (j in borough){
+ bob2=users_all_listings_digin[ which (users_all_listings_digin$neighbourhood_group == j ) , ]
+ tail((bob2[order (bob2$Freq),]  ),3)
+ fuckno=rbind(fuckno,tail((bob2[order (bob2$Freq),]  ),3))
+}
+#fuckno is a list of maxthree for each listing
+fuckno[1:15,]
+
+
+#dont touch anything below this commend!!!!!!!
+users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group", "neighbourhood")]))
 users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
 users_all_listings[1:5,]
 
@@ -171,23 +199,18 @@ graphics.off()
 ## boroughs based on other attributes?
 
 sample_data$last_review = as.Date(sample_data$last_review)
-set.seed(323)
+set.seed(42069)
 sample_split = sample(1:nrow(sample_data), 492*.75)
 sample_training = sample_data[sample_split,-c(2,3,4,6,13)]
 sample_testing = sample_data[-sample_split,-c(2,3,4,6,13)]
 
 lin.reg_model = lm(price~.,sample_training)
 lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
-
-### NOTE: FIGURE OUT HOW TO OMMIT OUTLIERS
-
-
 plot(lin.reg_prediction, sample_testing[,6])
 summary(lin.reg_model)
 abline(0,1)
 mse_lin.reg = mean((lin.reg_prediction - sample_testing[,6])^2)
 mse_lin.reg
-plot(density(lin.reg_prediction))
 cor(lin.reg_prediction,sample_testing[,6])
 summary(lin.reg_model)
 sqrt(mse_lin.reg)
@@ -195,9 +218,69 @@ sqrt(mse_lin.reg)
 par(mfrow=c(2,2))
 plot(lin.reg_model)
 
+## according to residuals vs. leverage tells us
+## that obs. #35681 is an outlier which affects
+## the lm model. 
+## Omitting it and see if the model improves.
+
+sample_training["35681",]
+lm_sample_training = sample_training[sample_training$id != 29964348,]
+
+lin.reg_model_2 = lm(price~.,lm_sample_training)
+lin.reg_prediction_2 = predict(lin.reg_model_2, newdata = sample_testing)
+plot(lin.reg_prediction_2, sample_testing[,6])
+summary(lin.reg_model_2)
+abline(0,1)
+mse_lin.reg_2 = mean((lin.reg_prediction_2 - sample_testing[,6])^2)
+mse_lin.reg_2
+cor(lin.reg_prediction_2,sample_testing[,6])
+sqrt(mse_lin.reg_2)
+
+## omitting the outlier improved the model!
+## checking if omitting more outliers will improve further
+
+par(mfrow=c(2,2))
+plot(lin.reg_model_2)
+
+## found that obs. #37300 might be worth to omit as well
+
+sample_training["37300",]
+lm_sample_training_3 = lm_sample_training[lm_sample_training$id != 30927844,]
+lin.reg_model_3 = lm(price~.,lm_sample_training_3)
+lin.reg_prediction_3 = predict(lin.reg_model_3, newdata = sample_testing)
+plot(lin.reg_prediction_3, sample_testing[,6])
+summary(lin.reg_model_3)
+abline(0,1)
+mse_lin.reg_3 = mean((lin.reg_prediction_3 - sample_testing[,6])^2)
+mse_lin.reg_3
+cor(lin.reg_prediction_3,sample_testing[,6])
+sqrt(mse_lin.reg_2)
+
+par(mfrow=c(2,2))
+plot(lin.reg_model_3)
+
+## omitting the 2nd outlier improved the model further!
+## no more outliers that affect the model.
+
+
 ### NOTE: RUN REGRESSION TREE'S 
+library(tree)
+tree_airbnb = tree(price~., sample_training)
+summary(tree_airbnb)
+par(mfrow=c(1,1))
+plot(tree_airbnb)
+text(tree_airbnb)
 
+cv_airbnb = cv.tree(tree_airbnb)
+summary(cv_airbnb)
 
+tree_prediction = predict(tree_airbnb, newdata = sample_testing)
+plot(tree_prediction, sample_testing[,6])
+abline(0,1)
+mse_tree = mean((tree_prediction - sample_testing[,6])^2)
+mse_tree
+cor(lin.reg_prediction_2,sample_testing[,6])
+sqrt(mse_lin.reg_2)
 
 # QUESITON FOUR:  (LDA/QDA)
 ## Predict the most expensive type of listing
