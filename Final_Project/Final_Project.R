@@ -1,3 +1,4 @@
+###### Set Up ######
 # Clear all existing variables in global environment
 rm(list = ls())
 # CLear plot tab and close/save any open files 
@@ -5,7 +6,11 @@ dev.off()
 # Set the working dorectory to the location where the file was saved
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
+delete_me = airbnb_data[FALSE, ]
+
+
 suppressMessages(library('rbokeh'))
+suppressMessages(library('plyr'))
 
 # READ THE DATA
 airbnb_data = read.csv("listings_summary.csv")
@@ -206,21 +211,44 @@ priv_rm = quantile(private_room$price, prob=1- 10 / 100)
 private_room[ which( private_room$price > priv_rm ) , "Pricy_01"] = 1
 
 
-home_apt = airbnb_data[airbnb_data$room_type == "Entire home/apt", ]
+home_apt = sample_data[sample_data$room_type == "Entire home/apt", ]
 ent_apt = quantile(home_apt$price , prob=1- 10 / 100)
-home_apt[ which( home_apt$price > priv_rm ) , "Pricy_01"] = 1
+home_apt[ which( home_apt$price > ent_apt ) , "Pricy_01"] = 1
 
 
 shared_room = airbnb_data[airbnb_data$room_type == "Shared room", ]
 shrd_rm = quantile(shared_room$price , prob=1- 10 / 100)
-shared_room[ which( shared_room$price > priv_rm ) , "Pricy_01"] = 1
+shared_room[ which( shared_room$price > shrd_rm ) , "Pricy_01"] = 1
 
 
 hotel_room = airbnb_data[airbnb_data$room_type == "Hotel room", ]
 htl_rm = quantile( hotel_room$price , prob=1- 10 / 100)
-hotel_room[ which( hotel_room$price > priv_rm ) , "Pricy_01"] = 1
+hotel_room[ which( hotel_room$price > htl_rm ) , "Pricy_01"] = 1
 
-dummy = MASS::qda(hotel_room$Pricy_01~., data = hotel_room)
+
+qda_type = function(data_frame){
+  formula = as.formula("as.factor(Pricy_01)~.
+                         -id
+                         -name
+                         -host_id
+                         -host_name
+                         -last_review
+                         -reviews_per_month
+                        -price")
+  return(MASS::qda(formula, data = data_frame))
+}
+
+
+colnames(hotel_room)[c(1:4,13:14)]
+colnames(hotel_room)[-c(1:4,13:14, 17)]
+colnames(hotel_room)
+
+
+##### DONT RUN THE NEXT LINE IT DOESN'T LOAD ####
+qwerty = qda_type(hotel_room)
+
+
+
 
 # QUESITON FIVE: (ON HOLD)  
 ## Is  there a the relationship between the number 
