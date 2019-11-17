@@ -111,8 +111,35 @@ suppressWarnings(
 # QUESITON TWO: (Summary and conclusions)
 ## Which boroughs  have the 
 ## most hosts with multiple listings? 
+users_all_listings_digin = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group","neighbourhood")]))
+users_all_listings_digin = users_all_listings_digin[users_all_listings_digin$Freq > 0,]
+users_all_listings_digin[1:8,]
 
-users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id", "neighbourhood_group")]))
+borough=c("Brooklyn","Manhattan","Queens","Bronx","Staten Island")
+
+fuckthis=users_all_listings_digin[FALSE,]
+
+
+for (i in borough) {
+  bob=users_all_listings_digin[ which(users_all_listings_digin$neighbourhood_group == i & users_all_listings_digin$Freq == max(users_all_listings_digin[users_all_listings_digin$neighbourhood_group == i,"Freq"])) , ]
+  fuckthis=rbind(fuckthis,bob)
+}
+#fuckthis is a table containiing list of max for each neighborghood
+fuckthis [1:6,]
+
+fuckno=users_all_listings [FALSE,]
+
+for (j in borough){
+ bob2=users_all_listings_digin[ which (users_all_listings_digin$neighbourhood_group == j ) , ]
+ tail((bob2[order (bob2$Freq),]  ),3)
+ fuckno=rbind(fuckno,tail((bob2[order (bob2$Freq),]  ),3))
+}
+#fuckno is a list of maxthree for each listing
+fuckno[1:15,]
+
+
+#dont touch anything below this commend!!!!!!!
+users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group", "neighbourhood")]))
 users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
 users_all_listings[1:5,]
 
