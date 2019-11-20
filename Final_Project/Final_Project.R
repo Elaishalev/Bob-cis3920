@@ -282,56 +282,6 @@ mse_tree
 cor(lin.reg_prediction_2,sample_testing[,6])
 sqrt(mse_lin.reg_2)
 
-# QUESITON FOUR:  (LDA/QDA)
-## Predict the most expensive type of listing
-## NOTE: CURRENT DETERMINANT TOP 10%
-### DEFINE COMPARISON
-
-airbnb_data["Pricy_01"] = 0
-
-private_room = airbnb_data[airbnb_data$room_type == "Private room", ]
-priv_rm = quantile(private_room$price, prob=1- 10 / 100)
-private_room[ which( private_room$price > priv_rm ) , "Pricy_01"] = 1
-
-
-home_apt = sample_data[sample_data$room_type == "Entire home/apt", ]
-ent_apt = quantile(home_apt$price , prob=1- 10 / 100)
-home_apt[ which( home_apt$price > ent_apt ) , "Pricy_01"] = 1
-
-
-shared_room = airbnb_data[airbnb_data$room_type == "Shared room", ]
-shrd_rm = quantile(shared_room$price , prob=1- 10 / 100)
-shared_room[ which( shared_room$price > shrd_rm ) , "Pricy_01"] = 1
-
-
-hotel_room = airbnb_data[airbnb_data$room_type == "Hotel room", ]
-htl_rm = quantile( hotel_room$price , prob=1- 10 / 100)
-hotel_room[ which( hotel_room$price > htl_rm ) , "Pricy_01"] = 1
-
-
-qda_type = function(data_frame){
-  formula = as.formula("as.factor(Pricy_01)~.
-                         -id
-                         -name
-                         -host_id
-                         -host_name
-                         -last_review
-                         -reviews_per_month
-                        -price")
-  return(MASS::qda(formula, data = data_frame))
-}
-
-
-colnames(hotel_room)[c(1:4,13:14)]
-colnames(hotel_room)[-c(1:4,13:14, 17)]
-colnames(hotel_room)
-
-
-##### DONT RUN THE NEXT LINE IT DOESN'T LOAD ####
-qwerty = qda_type(hotel_room)
-
-
-
 
 # QUESITON FIVE: (ON HOLD)  
 ## Is  there a the relationship between the number 
@@ -351,3 +301,26 @@ plot(sample_data$availability_365,sample_data$minimum_nights)
 
 abline(bb,col="red")
 
+
+## making a model to predict in which borough a given listing is
+set.seed(88)
+class_tree_training = sample(1:nrow(sample_data), nrow(sample_data)/2)
+class_tree_testing = sample_data[-class_tree_training,]
+
+class_tree = tree(neighbourhood_group~
+            room_type+price+minimum_nights+number_of_reviews+reviews_per_month
+            +calculated_host_listings_count+availability_365, sample_training, subset = class_tree_training)
+summary(class_tree)
+plot(class_tree)
+text(class_tree)
+
+class_tree_pred = predict(class_tree,class_tree_testing, type = "class")
+table(class_tree_pred, class_tree_testing$neighbourhood_group)
+(48+69+13)/246
+
+set.seed(00)
+cv_class_tree = cv.tree(class_tree, FUN = prune.misclass)
+cv_class_tree
+par(mfrow = c(1,2))
+plot(cv_class_tree$size, cv_class_tree$dev, type = "b")
+plot(cv_class_tree$k, cv_class_tree$dev, type = "b")
