@@ -200,70 +200,73 @@ graphics.off()
 
 sample_data$last_review = as.Date(sample_data$last_review)
 set.seed(42069)
-sample_split = sample(1:nrow(sample_data), 492*.75)
-sample_training = sample_data[sample_split,-c(2,3,4,6,13)]
-sample_testing = sample_data[-sample_split,-c(2,3,4,6,13)]
+sample_split = sample(1:nrow(sample_data), 492*.60)
+sample_training = sample_data[sample_split,-c(2,4,6,13)]
+sample_testing = sample_data[-sample_split,-c(2,4,6,13)]
 
 lin.reg_model = lm(price~.,sample_training)
 lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
-plot(lin.reg_prediction, sample_testing[,6])
+plot(lin.reg_prediction, sample_testing$price)
 summary(lin.reg_model)
 abline(0,1)
-mse_lin.reg = mean((lin.reg_prediction - sample_testing[,6])^2)
+mse_lin.reg = mean((lin.reg_prediction - sample_testing$price)^2)
 mse_lin.reg
-cor(lin.reg_prediction,sample_testing[,6])
+cor(lin.reg_prediction,sample_testing$price)
 summary(lin.reg_model)
 sqrt(mse_lin.reg)
 
 par(mfrow=c(2,2))
 plot(lin.reg_model)
 
-## according to residuals vs. leverage tells us
-## that obs. #35681 is an outlier which affects
+## according to residuals vs. leverage graph, 
+## obs. #37300 is an outlier which affects
 ## the lm model. 
 ## Omitting it and see if the model improves.
 
-sample_training["35681",]
-lm_sample_training = sample_training[sample_training$id != 29964348,]
+sample_training["37300",]
+lm_sample_training = sample_training[sample_training$id != 30927844,]
 
 lin.reg_model_2 = lm(price~.,lm_sample_training)
 lin.reg_prediction_2 = predict(lin.reg_model_2, newdata = sample_testing)
-plot(lin.reg_prediction_2, sample_testing[,6])
+plot(lin.reg_prediction_2, sample_testing$price)
 summary(lin.reg_model_2)
-abline(0,1)
-mse_lin.reg_2 = mean((lin.reg_prediction_2 - sample_testing[,6])^2)
+abline(0,1, col = 5)
+mse_lin.reg_2 = mean((lin.reg_prediction_2 - sample_testing$price)^2)
 mse_lin.reg_2
-cor(lin.reg_prediction_2,sample_testing[,6])
+cor(lin.reg_prediction_2,sample_testing$price)
 sqrt(mse_lin.reg_2)
 
-## omitting the outlier improved the model!
-## checking if omitting more outliers will improve further
+## omitting the outlier didn't improve the model.
+## checking if omitting more outliers will improve it.
 
 par(mfrow=c(2,2))
 plot(lin.reg_model_2)
 
-## found that obs. #37300 might be worth to omit as well
+## found that obs. #40299 might be worth to omit as well
 
-sample_training["37300",]
-lm_sample_training_3 = lm_sample_training[lm_sample_training$id != 30927844,]
+sample_training["40299",]
+lm_sample_training_3 = lm_sample_training[lm_sample_training$id != 33513897,]
+
 lin.reg_model_3 = lm(price~.,lm_sample_training_3)
 lin.reg_prediction_3 = predict(lin.reg_model_3, newdata = sample_testing)
-plot(lin.reg_prediction_3, sample_testing[,6])
+plot(lin.reg_prediction_3, sample_testing$price)
 summary(lin.reg_model_3)
-abline(0,1)
-mse_lin.reg_3 = mean((lin.reg_prediction_3 - sample_testing[,6])^2)
+abline(0,1, col = 5)
+mse_lin.reg_3 = mean((lin.reg_prediction_3 - sample_testing$price)^2)
 mse_lin.reg_3
-cor(lin.reg_prediction_3,sample_testing[,6])
+cor(lin.reg_prediction_3,sample_testing$price)
 sqrt(mse_lin.reg_2)
 
 par(mfrow=c(2,2))
 plot(lin.reg_model_3)
 
-## omitting the 2nd outlier improved the model further!
-## no more outliers that affect the model.
+## omitting the 2nd outlier didn't improve the model.
+## the original LM was the best one.
 
 
-### NOTE: RUN REGRESSION TREE'S 
+### Running a REGRESSION TREE to see if it 
+### predicts the price better than LM.
+
 library(tree)
 tree_airbnb = tree(price~., sample_training)
 summary(tree_airbnb)
@@ -275,21 +278,27 @@ cv_airbnb = cv.tree(tree_airbnb)
 summary(cv_airbnb)
 
 tree_prediction = predict(tree_airbnb, newdata = sample_testing)
-plot(tree_prediction, sample_testing[,6])
+plot(tree_prediction, sample_testing$price)
 abline(0,1)
-mse_tree = mean((tree_prediction - sample_testing[,6])^2)
+mse_tree = mean((tree_prediction - sample_testing$price)^2)
 mse_tree
-cor(lin.reg_prediction_2,sample_testing[,6])
+cor(lin.reg_prediction_2,sample_testing$price)
 sqrt(mse_lin.reg_2)
+
+## The regression tree model doesn't predict price
+## as well as the linear regression model.
 
 
 # QUESITON FIVE: (ON HOLD)  
 ## Is  there a the relationship between the number 
-## of reviews and borough? In which borough's are guests 
+## of reviews and borough? 
+
+##In which borough's are guests 
 ## most likely to leave a review?
 
-### NOTE: DO SOMETHING NEW 
 
+
+### NOTE: DO SOMETHING NEW 
 
 graphics.off()
 bb=lm(minimum_nights~availability_365,sample_data)
@@ -304,19 +313,26 @@ abline(bb,col="red")
 
 ## making a model to predict in which borough a given listing is
 set.seed(88)
-class_tree_training = sample(1:nrow(sample_data), nrow(sample_data)/2)
-class_tree_testing = sample_data[-class_tree_training,]
+class_tree_split = sample(1:nrow(sample_data), nrow(sample_data)/2)
+class_tree_training = sample_data[class_tree_split,]
+class_tree_testing = sample_data[-class_tree_split,]
 
 class_tree = tree(neighbourhood_group~
             room_type+price+minimum_nights+number_of_reviews+reviews_per_month
-            +calculated_host_listings_count+availability_365, sample_training, subset = class_tree_training)
+            +calculated_host_listings_count+availability_365
+            , sample_data, subset = class_tree_training)
 summary(class_tree)
 plot(class_tree)
 text(class_tree)
 
 class_tree_pred = predict(class_tree,class_tree_testing, type = "class")
 table(class_tree_pred, class_tree_testing$neighbourhood_group)
-(48+69+13)/246
+misclass_rate = 1-((59+80+7)/246)
+misclass_rate
+
+## the misclass rate is about 40%
+## checking if pruning the tree will
+## provide better results for the model
 
 set.seed(00)
 cv_class_tree = cv.tree(class_tree, FUN = prune.misclass)
@@ -324,3 +340,16 @@ cv_class_tree
 par(mfrow = c(1,2))
 plot(cv_class_tree$size, cv_class_tree$dev, type = "b")
 plot(cv_class_tree$k, cv_class_tree$dev, type = "b")
+
+prune_class_tree = prune.misclass(class_tree, best = 18)
+plot(prune_class_tree)
+text(prune_class_tree)
+
+prune_tree_pred = predict(prune_class_tree, class_tree_testing, type = "class")
+table(prune_tree_pred,class_tree_testing$neighbourhood_group)
+misclass_rate_prune = 1-((58+77+7)/246)
+misclass_rate_prune
+
+## the misclassificateion rate actually went up
+## by about 2%, so the model was performing
+## better before the pruning.
