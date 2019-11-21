@@ -205,90 +205,83 @@ head(multi_lister_composition)
 
 
 #### QUESITON THREE ####
-## TASK: multiple linear regression
-## Predict the price of listings in different 
-## boroughs based on other attributes?
+## TASK: MULTIPLE LINEAR REGRESSION / REGRESSION TREE
+## PREDICT THE PRICE OF LISTINGS IN DIFFERENT 
+## BOROUGHS ON OTHER ATTRIBUTES?
 
 sample_data$last_review = as.Date(sample_data$last_review)
 set.seed(42069)
-sample_split = sample(1:nrow(sample_data), 492*.75)
-sample_training = sample_data[sample_split,-c(2,3,4,6,13)]
-sample_testing = sample_data[-sample_split,-c(2,3,4,6,13)]
+sample_split = sample(1:nrow(sample_data), 492*.60)
+sample_training = sample_data[sample_split,-c(2,4,6,13)]
+sample_testing = sample_data[-sample_split,-c(2,4,6,13)]
 
 lin.reg_model = lm(price~.,sample_training)
 lin.reg_prediction = predict(lin.reg_model, newdata = sample_testing)
-plot(lin.reg_prediction, sample_testing[,6])
+plot(lin.reg_prediction, sample_testing$price)
 summary(lin.reg_model)
-abline(0,1)
-mse_lin.reg = mean((lin.reg_prediction - sample_testing[,6])^2)
+abline(0,1, col = 5)
+mse_lin.reg = mean((lin.reg_prediction - sample_testing$price)^2)
 mse_lin.reg
-cor(lin.reg_prediction,sample_testing[,6])
+cor(lin.reg_prediction,sample_testing$price)
 summary(lin.reg_model)
 sqrt(mse_lin.reg)
 
+  
 par(mfrow=c(2,2))
 plot(lin.reg_model)
 
-## according to residuals vs. leverage tells us
-## that obs. #35681 is an outlier which affects
-## the lm model. 
-## Omitting it and see if the model improves.
+## ACCORDING TO THE RESIDUALS VS. LEVERGAE GRAPH, 
+## OBS. #37300 IS AN OUTLIER WHICH AFFECTS
+## THE LM MODEL 
+## OMITTING IT AND CHECKING IF THE MODEL IMPROVES.
 
-sample_training["35681",]
-lm_sample_training = sample_training[sample_training$id != 29964348,]
+sample_training["37300",]
+lm_sample_training2 = sample_training[sample_training$id != 30927844,]
 
-lin.reg_model_2 = lm(price~.,lm_sample_training)
+lin.reg_model_2 = lm(price~.,lm_sample_training2)
 lin.reg_prediction_2 = predict(lin.reg_model_2, newdata = sample_testing)
-plot(lin.reg_prediction_2, sample_testing[,6])
+plot(lin.reg_prediction_2, sample_testing$price)
 summary(lin.reg_model_2)
-abline(0,1)
-mse_lin.reg_2 = mean((lin.reg_prediction_2 - sample_testing[,6])^2)
+abline(0,1, col = 5)
+mse_lin.reg_2 = mean((lin.reg_prediction_2 - sample_testing$price)^2)
 mse_lin.reg_2
-cor(lin.reg_prediction_2,sample_testing[,6])
+cor(lin.reg_prediction_2,sample_testing$price)
 sqrt(mse_lin.reg_2)
-
-## omitting the outlier improved the model!
-## checking if omitting more outliers will improve further
 
 par(mfrow=c(2,2))
 plot(lin.reg_model_2)
 
+## OMITTING THE OUTLIER DIDN'T IMPROVE THE MODEL.
+## WE FIND THAT OBS. #40299 MIGHT BE WORTH TO OMIT AS WELL.
+## CHECKING IF OMITTING ANOTHER OUTLIER WILL IMPROVE IT.
 
-## found that obs. #37300 might be worth to omit as well
+sample_training["40299",]
+lm_sample_training_3 = lm_sample_training2[lm_sample_training2$id != 33513897,]
 
-sample_training["37300",]
-lm_sample_training_3 = lm_sample_training[lm_sample_training$id != 30927844,]
 lin.reg_model_3 = lm(price~.,lm_sample_training_3)
 lin.reg_prediction_3 = predict(lin.reg_model_3, newdata = sample_testing)
-plot(lin.reg_prediction_3, sample_testing[,6])
+plot(lin.reg_prediction_3, sample_testing$price)
 summary(lin.reg_model_3)
-abline(0,1)
-mse_lin.reg_3 = mean((lin.reg_prediction_3 - sample_testing[,6])^2)
+abline(0,1, col = 5)
+mse_lin.reg_3 = mean((lin.reg_prediction_3 - sample_testing$price)^2)
 mse_lin.reg_3
-cor(lin.reg_prediction_3,sample_testing[,6])
+cor(lin.reg_prediction_3,sample_testing$price)
 sqrt(mse_lin.reg_2)
 
 par(mfrow=c(2,2))
 plot(lin.reg_model_3)
 
-?figure
+## OMITTING THE 2nd OUTLIER DIDN'T IMPROVE THE MODEL.
+## THE ORIGINAL LM WAS THE BEST ONE.
 
-suppressMessages(
 
-  rbokeh::figure(
-    title = "Residuals vs Fitted",
-    toolbar_location = "above",
-    tools = c("pan","lasso_select", "wheel_zoom","reset") 
-    ) %>%
-  ly_points( x = data.frame(lin.reg_model[["residuals"]]), y = data.frame(lin.reg_model[["fitted.values"]]) )
-  %>% x_axis()
-  %>% y_axis()
-)
-## omitting the 2nd outlier improved the model further!
-## no more outliers that affect the model.
+### RUNNING A REGRESSION TREE TO SEE IF IT 
+### PREDICTS THE PRICE BETTER THAN LM.
 
-### NOTE: RUN REGRESSION TREE'S 
 library(tree)
+library(gbm)
+library(randomForest)
+
 tree_airbnb = tree(price~., sample_training)
 summary(tree_airbnb)
 par(mfrow=c(1,1))
@@ -299,21 +292,61 @@ cv_airbnb = cv.tree(tree_airbnb)
 summary(cv_airbnb)
 
 tree_prediction = predict(tree_airbnb, newdata = sample_testing)
-plot(tree_prediction, sample_testing[,6])
-abline(0,1)
-mse_tree = mean((tree_prediction - sample_testing[,6])^2)
+plot(tree_prediction, sample_testing$price)
+abline(0,1, col = 5)
+mse_tree = mean((tree_prediction - sample_testing$price)^2)
 mse_tree
-cor(lin.reg_prediction_2,sample_testing[,6])
-sqrt(mse_lin.reg_2)
+cor(lin.reg_prediction_2,sample_testing$price)
+sqrt(mse_tree)
+
+## THE REGRESSION TREE MODEL DOESN'T PREDICT PRICE
+## AS WELL AS THE LINEAR REGRESSION MODEL.
+
+
+## BOOSTING THE REG. TREE IN ORDER TO TRY GET 
+## A BETTER PREDICTION TREE
+
+boost_reg_tree = gbm(price~., data = sample_training, distribution = "gaussian"
+                     , n.trees = 5000)
+summary(boost_reg_tree)
+boost_reg_pred = predict(boost_reg_tree, newdata = sample_testing, n.trees = 5000)
+mse_reg_boost = mean((boost_reg_pred - sample_testing$price)^2)
+mse_reg_boost
+cor(boost_reg_pred,sample_testing$price)
+
+## BOOSTING IMPROVED THE MISCLASSIFICATION RATE!
+## BUT IT'S STILL NOT AS ACCURATE AS LIN. REG..
+## SUMMARY TELLS US THAT AVAILABILITY IS THE MOST 
+## INFLUENCIAL ATTRIBUTE ON PREDICTING THE PRICE!
+
+## NOW TRYING BAGGING TO COMPARE TO PREVIOUS METHODS
+
+bagging_reg_tree = randomForest(price~., data = sample_training
+                                , mtry = 11, importance = T)
+bagging_reg_pred = predict(bagging_reg_tree, newdata = sample_testing)
+plot(bagging_reg_pred, sample_testing$price)
+abline(0,1, col = 5)
+mse_bagging_reg = mean((bagging_reg_pred - sample_testing$price)^2)
+mse_bagging_reg
+summary(bagging_reg_tree)
+cor(bagging_reg_pred,sample_testing$price)
+
+## BAGGING HAS PROVIDED THE BEST 
+## MISCLASSIFICATION RATE, AND THE BEST CORRELATION
+## BETWEEN PREDICTIONS AND TESTING DATA!
+
+
 
 #### QUESITON FOUR ####
-## ON HOLD
-## Is  there a the relationship between the number 
-## of reviews and borough? In which borough's are guests 
+## IS THERE A RELATIONSHIP BETWEEN THE NUMBER OF 
+## REVIEWS AND THE DIFFERENT OROUGHS?
+
+##In which borough's are guests 
 ## most likely to leave a review?
 
-### NOTE: DO SOMETHING NEW 
 
+
+### NOTE: DO SOMETHING NEW 
 
 graphics.off()
 bb=lm(minimum_nights~availability_365,sample_data)
@@ -326,21 +359,31 @@ plot(sample_data$availability_365,sample_data$minimum_nights)
 abline(bb,col="red")
 
 
-## making a model to predict in which borough a given listing is
+## QUESTION FIVE ##
+## CAN WE PREDICT IN WHICH BOROUGH A GIVEN LIST IS
+## WITHOUT KNOWING IT'S COORDINATES AND NEIGHBORHOOD?
+
 set.seed(88)
-class_tree_training = sample(1:nrow(sample_data), nrow(sample_data)/2)
-class_tree_testing = sample_data[-class_tree_training,]
+class_tree_split = sample(1:nrow(sample_data), nrow(sample_data)*.5)
+class_tree_training = sample_data[class_tree_split,]
+class_tree_testing = sample_data[-class_tree_split,]
 
 class_tree = tree(neighbourhood_group~
             room_type+price+minimum_nights+number_of_reviews+reviews_per_month
-            +calculated_host_listings_count+availability_365, sample_training, subset = class_tree_training)
+            +calculated_host_listings_count+availability_365
+            , class_tree_training)
 summary(class_tree)
 plot(class_tree)
 text(class_tree)
 
 class_tree_pred = predict(class_tree,class_tree_testing, type = "class")
 table(class_tree_pred, class_tree_testing$neighbourhood_group)
-(48+69+13)/246
+misclass_rate = 1-((67+83+5)/246)
+misclass_rate
+
+## THE MISCLASSIFICATION RATE IS ABOUT 37%.
+## CHECKING IF PRUNING THE TREE WILL PROVIDE
+## BETTER RESULTS FOR THE TREE MODEL
 
 set.seed(00)
 cv_class_tree = cv.tree(class_tree, FUN = prune.misclass)
@@ -349,3 +392,26 @@ par(mfrow = c(1,2))
 plot(cv_class_tree$size, cv_class_tree$dev, type = "b")
 plot(cv_class_tree$k, cv_class_tree$dev, type = "b")
 
+prune_class_tree = prune.misclass(class_tree, best = 18)
+plot(prune_class_tree)
+text(prune_class_tree)
+
+prune_tree_pred = predict(prune_class_tree, class_tree_testing, type = "class")
+table(prune_tree_pred,class_tree_testing$neighbourhood_group)
+misclass_rate_prune = 1-((47+81+3)/246)
+misclass_rate_prune
+
+## THE MISCLASSIFICATION RATE WENT UP BY ALMOST 10%.
+## THE TREE MODEL WAS PERFORMING BETTER BEFORE THE PRUNING.
+
+## BOOSTING THE TREE TO TRY AND IMPROVE IT
+# tried, but it didn't work 
+
+## Trying bagging...
+
+
+
+
+## WE CAN LEARN THAT THE DATA OF LISTINGS IN MANHATTAN AND
+## BROOKLYN IS VERY SIMILAR TO EACH OTHER, AND IS VERY
+## DIFFERENT FROM THE DATA OF LISTINGS IN THE OTHER BOROUGHS.
