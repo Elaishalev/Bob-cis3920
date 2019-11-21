@@ -118,6 +118,8 @@ suppressWarnings(
 )
 
 
+?gmap
+
 #### QUESITON TWO ####
 ## TASK: Summary and conclusions
 ## Which boroughs  have the 
@@ -269,9 +271,21 @@ sqrt(mse_lin.reg_2)
 par(mfrow=c(2,2))
 plot(lin.reg_model_3)
 
+?figure
+
+suppressMessages(
+
+  rbokeh::figure(
+    title = "Residuals vs Fitted",
+    toolbar_location = "above",
+    tools = c("pan","lasso_select", "wheel_zoom","reset") 
+    ) %>%
+  ly_points( x = data.frame(lin.reg_model[["residuals"]]), y = data.frame(lin.reg_model[["fitted.values"]]) )
+  %>% x_axis()
+  %>% y_axis()
+)
 ## omitting the 2nd outlier improved the model further!
 ## no more outliers that affect the model.
-
 
 ### NOTE: RUN REGRESSION TREE'S 
 library(tree)

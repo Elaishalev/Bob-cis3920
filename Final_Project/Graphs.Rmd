@@ -1,0 +1,210 @@
+---
+title: "Graphs"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    storyboard: true
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+
+###### Set Up ######
+# Clear all existing variables in global environment
+rm(list = ls())
+# CLear plot tab and close/save any open files 
+# dev.off()
+# Set the working dorectory to the location where the file was saved
+# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+
+suppressMessages(library('rbokeh'))
+suppressMessages(library('plyr'))
+
+# READ THE DATA
+airbnb_data = read.csv("listings_summary.csv")
+suppressMessages(attach(airbnb_data))
+
+airbnb_data[airbnb_data$last_review == "", c("id","number_of_reviews","last_review","reviews_per_month")]
+
+#### SET "reviews_per_month" RECORDS TO 0 
+airbnb_data[airbnb_data$number_of_reviews == "0", "reviews_per_month"] = 0
+
+#### CHECK FOR ROWS WITH NA IN  "reviews_per_month" AGAIN TO CONFIRM VALUE ASSIGNMENT
+airbnb_data[airbnb_data$last_review == "", c("id","number_of_reviews","last_review","reviews_per_month")]
+
+#### check number of records wit hminimum nights over one year
+airbnb_data[airbnb_data$minimum_nights > 365, c("id", "host_id", "minimum_nights")]
+
+#### OMIT ENTRIES WITH MINIMUM NIGHTS OVER 365
+airbnb_data = airbnb_data[!(airbnb_data$minimum_nights>365) , ]
+
+
+
+## ELAI'S SAMPLING FUNCTION
+# ELAI CARRIED THIS FUCKING TEAM
+rep_func = function(data, borough){
+  listings = data[data$neighbourhood_group== borough,]
+  entire = listings[listings$room_type=="Entire home/apt",]
+  hotel = listings[listings$room_type=="Hotel room",]
+  private = listings[listings$room_type=="Private room",]
+  shared = listings[listings$room_type=="Shared room",]
+  set.seed(666) # because this is the devils work
+  sample = rbind(
+    entire[sample(1:nrow(entire), ceiling(nrow(entire)*.01)), ],
+    hotel[sample(1:nrow(hotel), ceiling(nrow(hotel)*.01)), ],
+    private[sample(1:nrow(private), ceiling(nrow(private)*.01)), ],
+    shared[sample(1:nrow(shared), ceiling(nrow(shared)*.01)), ]
+  )  
+  rm(listings, entire, hotel, private, shared)
+  return(sample)
+} 
+
+sample_data = rbind(
+  rep_func(airbnb_data, "Brooklyn"), 
+  rep_func(airbnb_data, "Bronx"), 
+  rep_func(airbnb_data, "Manhattan"), 
+  rep_func(airbnb_data, "Queens"), 
+  rep_func(airbnb_data, "Staten Island")
+  )
+#### SET UP COMPLETE ####
+
+#### QUESITON TWO ####
+## TASK: Summary and conclusions
+## Which boroughs  have the 
+## most hosts with multiple listings? 
+listings_by_neighbourhood = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group","neighbourhood")]))
+listings_by_neighbourhood = listings_by_neighbourhood[listings_by_neighbourhood$Freq > 0,]
+
+#max_3 will be a table containiing list of top 3 for each neighborghood
+max_3=listings_by_neighbourhood[FALSE,]
+
+#min_3 will be a list of maxthree for each listing
+min_3=listings_by_neighbourhood [FALSE,]
+
+
+## FOR LOOPS TO BUILD DATA FRAME
+for (i in unique(airbnb_data$neighbourhood_group ) ) {
+  bob=listings_by_neighbourhood[ which (listings_by_neighbourhood$neighbourhood_group == i ) , ]
+  tail((bob[order (bob$Freq),]  ),3)
+  max_3=rbind(max_3,tail((bob[order (bob$Freq),]  ),3))
+}
+
+for (i in unique(airbnb_data$neighbourhood_group ) ) {
+ bob=listings_by_neighbourhood[ which (listings_by_neighbourhood$neighbourhood_group == i ) , ]
+ tail((bob[order (bob$Freq),]  ),3)
+ min_3=rbind(min_3,tail((bob[order (bob$Freq),]  ),3))
+}
+# REMOVE EXCESS VARIABLES
+rm(i, bob)
+
+
+listing_count_by_user_id = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id","neighbourhood_group")]))
+listing_count_by_user_id = listing_count_by_user_id[listing_count_by_user_id$Freq > 0,]
+
+multi_lister_composition = data.frame( 
+  borough = character(), total = numeric(),
+  milti_listers = numeric(), percent_comp =  numeric()
+)
+
+suppressWarnings(for (i in c(1:5) ) {
+  multi_lister_composition[i,] = list(
+    unique(airbnb_data$neighbourhood_group)[i],
+    nrow(listing_count_by_user_id[listing_count_by_user_id$neighbourhood_group == unique(airbnb_data$neighbourhood_group)[i], ]),
+    nrow(listing_count_by_user_id[ which( listing_count_by_user_id$neighbourhood_group == unique(airbnb_data$neighbourhood_group)[i] & listing_count_by_user_id$Freq > 1), ]),0
+)})
+rm(i)
+
+multi_lister_composition$borough = unique(airbnb_data$neighbourhood_group)
+multi_lister_composition$percent_comp = 100*multi_lister_composition$milti_listers / multi_lister_composition$total
+
+
+
+
+
+```
+
+
+### Listing type by borough
+
+```{r}
+### PLOTTING LISTING TYPES BY BOROUGH 
+suppressMessages(
+  figure(  data = airbnb_data) 
+  %>% ly_bar(neighbourhood_group, color = room_type, 
+           position = "dodge", hover = TRUE) 
+  %>% theme_axis("x", major_label_orientation = 45 ) 
+  %>% x_axis(label = "Borough") 
+  %>% y_axis(label = "Number of listings")
+)
+```
+
+--------
+
+HELLO WORLD
+
+### GeoPlot of listings by borough 
+
+```{r}
+### GOEPLOTING 
+### GOEPLOTING 
+g_map_key = "AIzaSyBNDq_9nG0AR8smomFdipJ2WWBC28AWbWU"
+polygons = data.frame(jsonlite::fromJSON("neighbourhoods.geojson"))
+
+suppressWarnings(
+  gmap( api_key = g_map_key,
+        lat = mean(airbnb_data$latitude), lng = mean(airbnb_data$longitude), 
+        zoom = 11, width = 600, height = 600,
+        map_style = gmap_style("blue_water"),
+        tools = c( "pan", "wheel_zoom")
+        ) 
+  %>% ly_points( y = airbnb_data$latitude, x = airbnb_data$longitude, data = airbnb_data, color = neighbourhood_group,
+               glyph = 21, size = 2, hover = T, lname = "air_bnb_locations") 
+)
+```
+
+
+-----
+
+
+### Total number of listers by borough
+
+```{r}
+### PLOTTING TOTAL LISTINGS
+suppressMessages(
+  figure( data =  multi_lister_composition , title = "Count of users by borough" ,legend_location = NULL,
+          tools = c("wheel_zoom", "reset" ,"pan"), toolbar_location = "above",
+          ylim = c(0,max(multi_lister_composition$total)+500) ) %>% 
+    ly_bar(x=borough,y=total, color = borough,
+           hover = TRUE, position = 'dodge') %>%
+    x_axis(label = "Borough") %>%
+    y_axis(label = "Number of users")
+)
+
+```
+
+
+------
+
+
+### Percent 
+
+```{r}
+### PLOTTING PERCENT COMPOSITION
+suppressMessages(
+  figure( data =  multi_lister_composition , title = "Percent composition of users with multiple listings" ,legend_location = NULL,
+          tools = c("wheel_zoom", "reset" ,"pan"), toolbar_location = "above",
+          ylim = c(0,max(multi_lister_composition$percent_comp)+5) ) %>% 
+    ly_bar(x=borough,y=percent_comp,color = multi_lister_composition$borough, hover = TRUE,
+           lname = "percent") %>%
+    x_axis(label = "Borough") %>%
+    y_axis(label = "Percentage of users", 
+           number_formatter = "printf", format = "%0.2f%%")
+)
+```
+
+
+----------
+
+
+
