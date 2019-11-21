@@ -2,12 +2,9 @@
 # Clear all existing variables in global environment
 rm(list = ls())
 # CLear plot tab and close/save any open files 
-dev.off()
+# dev.off()
 # Set the working dorectory to the location where the file was saved
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
-delete_me = airbnb_data[FALSE, ]
-
 
 suppressMessages(library('rbokeh'))
 suppressMessages(library('plyr'))
@@ -55,8 +52,10 @@ airbnb_data = airbnb_data[!(airbnb_data$minimum_nights>365) , ]
 ### CHECK RANGE OF VALUES TO CONFIRM OBSERVATIONS WERE OMITED
 range(airbnb_data$minimum_nights)
 
+
+
+## ELAI'S SAMPLING FUNCTION
 # ELAI CARRIED THIS FUCKING TEAM
-##################################################
 rep_func = function(data, borough){
   listings = data[data$neighbourhood_group== borough,]
   entire = listings[listings$room_type=="Entire home/apt",]
@@ -81,12 +80,13 @@ sample_data = rbind(
   rep_func(airbnb_data, "Queens"), 
   rep_func(airbnb_data, "Staten Island")
   )
-##################################################
+#### SET UP COMPLETE ####
 
 
 
 
-# QUESITON ONE (Visual data exploration)
+#### QUESITON ONE ####
+## TASK: Visual data exploration
 ## WHAT IS THE DISTRIBUTION OF DIFFERENT 
 ## LISTING TYPES IN EACH BOROUGH?
 
@@ -94,107 +94,116 @@ sample_data = rbind(
 
 ### PLOTTING LISTING TYPES BY BOROUGH 
 suppressMessages(
-  figure(legend_location = ) %>% 
-    ly_bar(airbnb_data$neighbourhood_group, color = airbnb_data$room_type, data = airbnb_data, position = "dodge", hover = TRUE) %>%
-    theme_axis("x", major_label_orientation = 45 ) %>%
-    x_axis(label = "Borough") %>%
-    y_axis(label = "Number of listings")
+  figure( legend_location = NULL, data = airbnb_data) 
+  %>% ly_bar(neighbourhood_group, color = room_type, 
+           position = "dodge", hover = TRUE) 
+  %>% theme_axis("x", major_label_orientation = 45 ) 
+  %>% x_axis(label = "Borough") 
+  %>% y_axis(label = "Number of listings")
 )
 
 ### GOEPLOTING 
 g_map_key = "AIzaSyBNDq_9nG0AR8smomFdipJ2WWBC28AWbWU"
-polygons = geojsonR::Dump_From_GeoJson("neighbourhoods.geojson")
+polygons = data.frame(jsonlite::fromJSON("neighbourhoods.geojson"))
+
 suppressWarnings(
-  gmap( lat = mean(airbnb_data$latitude), lng = mean(airbnb_data$longitude), zoom = 11,
-        width = 600, height = 600, map_style = gmap_style("blue_water"), api_key = g_map_key)
+  gmap( api_key = g_map_key,
+        lat = mean(airbnb_data$latitude), lng = mean(airbnb_data$longitude), 
+        zoom = 11, width = 600, height = 600,
+        map_style = gmap_style("blue_water"),
+        tools = c( "pan", "wheel_zoom")
+        ) 
+  %>% ly_points( y = airbnb_data$latitude, x = airbnb_data$longitude, data = airbnb_data, color = neighbourhood_group,
+               glyph = 21, size = 2, hover = T, lname = "air_bnb_locations") 
 )
 
-### NOTE: ADDITIONAL PLOTS
-## SHOW THE HIGHEST AND LOWEST BY NEIGHBORHOOD (TOP 3)
 
-
-
-# QUESITON TWO: (Summary and conclusions)
+#### QUESITON TWO ####
+## TASK: Summary and conclusions
 ## Which boroughs  have the 
 ## most hosts with multiple listings? 
-users_all_listings_digin = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group","neighbourhood")]))
-users_all_listings_digin = users_all_listings_digin[users_all_listings_digin$Freq > 0,]
-users_all_listings_digin[1:8,]
+listings_by_neighbourhood = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group","neighbourhood")]))
+listings_by_neighbourhood = listings_by_neighbourhood[listings_by_neighbourhood$Freq > 0,]
+head(listings_by_neighbourhood)
 
-borough=c("Brooklyn","Manhattan","Queens","Bronx","Staten Island")
+#max_3 will be a table containiing list of top 3 for each neighborghood
+max_3=listings_by_neighbourhood[FALSE,]
 
-fuckthis=users_all_listings_digin[FALSE,]
+#min_3 will be a list of maxthree for each listing
+min_3=listings_by_neighbourhood [FALSE,]
 
 
-for (i in borough) {
-  bob=users_all_listings_digin[ which(users_all_listings_digin$neighbourhood_group == i & users_all_listings_digin$Freq == max(users_all_listings_digin[users_all_listings_digin$neighbourhood_group == i,"Freq"])) , ]
-  fuckthis=rbind(fuckthis,bob)
+## FOR LOOPS TO BUILD DATA FRAME
+for (i in unique(airbnb_data$neighbourhood_group ) ) {
+  bob=listings_by_neighbourhood[ which (listings_by_neighbourhood$neighbourhood_group == i ) , ]
+  tail((bob[order (bob$Freq),]  ),3)
+  max_3=rbind(max_3,tail((bob[order (bob$Freq),]  ),3))
 }
-#fuckthis is a table containiing list of max for each neighborghood
-fuckthis [1:6,]
 
-fuckno=users_all_listings [FALSE,]
-
-for (j in borough){
- bob2=users_all_listings_digin[ which (users_all_listings_digin$neighbourhood_group == j ) , ]
- tail((bob2[order (bob2$Freq),]  ),3)
- fuckno=rbind(fuckno,tail((bob2[order (bob2$Freq),]  ),3))
+for (i in unique(airbnb_data$neighbourhood_group ) ) {
+ bob=listings_by_neighbourhood[ which (listings_by_neighbourhood$neighbourhood_group == i ) , ]
+ tail((bob[order (bob$Freq),]  ),3)
+ min_3=rbind(min_3,tail((bob[order (bob$Freq),]  ),3))
 }
-#fuckno is a list of maxthree for each listing
-fuckno[1:15,]
+# REMOVE EXCESS VARIABLES
+rm(i, bob)
+
+# PRINT RESULTS
+head(max_3)
+head(min_3)
 
 
 #dont touch anything below this commend!!!!!!!
-users_all_listings = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("neighbourhood_group", "neighbourhood")]))
-users_all_listings = users_all_listings[users_all_listings$Freq > 0,]
-users_all_listings[1:5,]
+listing_count_by_user_id = data.frame(table(airbnb_data[airbnb_data$calculated_host_listings_count > 0, c("host_id","neighbourhood_group")]))
+listing_count_by_user_id = listing_count_by_user_id[listing_count_by_user_id$Freq > 0,]
+head(listing_count_by_user_id)
 
-multiple_Bronx=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Bronx" & users_all_listings$Freq > 1), ])
-multiple_Queens=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Queens" &users_all_listings$Freq > 1 ), ])
-multiple_Brooklyn=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Brooklyn"&users_all_listings$Freq > 1 ), ])
-multiple_StatenIsland=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Staten Island"&users_all_listings$Freq > 1 ), ])
-multiple_Manhattan=nrow(users_all_listings[which(users_all_listings$neighbourhood_group == "Manhattan"&users_all_listings$Freq > 1 ), ])
+multi_lister_composition = data.frame( 
+  borough = character(), total = numeric(),
+  milti_listers = numeric(), percent_comp =  numeric()
+)
 
-all_Bronx=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Bronx", ])
-all_Queens=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Queens", ])
-all_Brooklyn=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Brooklyn", ])
-all_StatenIsland=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Staten Island", ])
-all_Manhattan=nrow(users_all_listings[users_all_listings$neighbourhood_group == "Manhattan", ])
+suppressWarnings(for (i in c(1:5) ) {
+  multi_lister_composition[i,] = list(
+    unique(airbnb_data$neighbourhood_group)[i],
+    nrow(listing_count_by_user_id[listing_count_by_user_id$neighbourhood_group == unique(airbnb_data$neighbourhood_group)[i], ]),
+    nrow(listing_count_by_user_id[ which( listing_count_by_user_id$neighbourhood_group == unique(airbnb_data$neighbourhood_group)[i] & listing_count_by_user_id$Freq > 1), ]),0
+)})
+rm(i)
 
-Bronx_percent=(multiple_Bronx / all_Bronx)*100
-Queens_percent=(multiple_Queens/all_Queens)*100
-Brooklyn_percent=(multiple_Brooklyn/all_Brooklyn)*100
-Manhattan_percent=(multiple_Manhattan/all_Manhattan)*100
-StatenIsland_percent=(multiple_StatenIsland/all_StatenIsland)*100
-
-Queens_percent
-Brooklyn_percent
-Manhattan_percent
-StatenIsland_percent
-Brooklyn_percent
-
-x=c(Queens_percent, Brooklyn_percent, Manhattan_percent, StatenIsland_percent,Bronx_percent)
-y=c(multiple_Queens, multiple_Brooklyn, multiple_Manhattan, multiple_StatenIsland, multiple_Bronx)
-
-barplot(x,main="Percentage distribution of Multiple Listings ",
-        names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
-barplot(y,main="Number of Multiple Listings ",
-        names.arg=c("Queens", "Brooklyn", "Manhattan","StatenIsland","Bronx"))
-
-### NOTE: modify to show the count of people with multiple listings rather then plotting the value 
-### in the "calculated_host_listings_count" for each observation
-plot (neighbourhood_group,   calculated_host_listings_count)
-
-max(airbnb_data$calculated_host_listings_count)
-
-users_all_listings[which(users_all_listings$Freq==max(users_all_listings$Freq)), ]
-
-plot (neighbourhood_group=="Manhattan",calculated_host_listings_count)
-
-graphics.off()
+multi_lister_composition$borough = unique(airbnb_data$neighbourhood_group)
+multi_lister_composition$percent_comp = 100*multi_lister_composition$milti_listers / multi_lister_composition$total
+head(multi_lister_composition)
 
 
-# QUESITON THREE:  (multiple linear regression)
+### PLOTTING PERCENT COMPOSITION
+suppressMessages(
+  figure( data =  multi_lister_composition , title = "Percent composition of users with multiple listings" ,legend_location = NULL,
+          tools = c("wheel_zoom", "reset" ,"pan"), toolbar_location = "above",
+          ylim = c(0,max(multi_lister_composition$percent_comp)+5) ) %>% 
+    ly_bar(x=borough,y=percent_comp,color = multi_lister_composition$borough, hover = TRUE,
+           lname = "percent") %>%
+    x_axis(label = "Borough") %>%
+    y_axis(label = "Percentage of users", 
+           number_formatter = "printf", format = "%0.2f%%")
+)
+
+### PLOTTING TOTAL LISTINGS
+suppressMessages(
+  figure( data =  multi_lister_composition , title = "Count of users by borough" ,legend_location = NULL,
+          tools = c("wheel_zoom", "reset" ,"pan"), toolbar_location = "above",
+          ylim = c(0,max(multi_lister_composition$total)+500) ) %>% 
+    ly_bar(x=borough,y=total, color = borough,
+           hover = TRUE, position = 'dodge') %>%
+    x_axis(label = "Borough") %>%
+    y_axis(label = "Number of users")
+)
+
+head(multi_lister_composition)
+
+
+#### QUESITON THREE ####
+## TASK: multiple linear regression
 ## Predict the price of listings in different 
 ## boroughs based on other attributes?
 
@@ -242,6 +251,7 @@ sqrt(mse_lin.reg_2)
 par(mfrow=c(2,2))
 plot(lin.reg_model_2)
 
+
 ## found that obs. #37300 might be worth to omit as well
 
 sample_training["37300",]
@@ -282,8 +292,8 @@ mse_tree
 cor(lin.reg_prediction_2,sample_testing[,6])
 sqrt(mse_lin.reg_2)
 
-
-# QUESITON FIVE: (ON HOLD)  
+#### QUESITON FOUR ####
+## ON HOLD
 ## Is  there a the relationship between the number 
 ## of reviews and borough? In which borough's are guests 
 ## most likely to leave a review?
@@ -324,3 +334,4 @@ cv_class_tree
 par(mfrow = c(1,2))
 plot(cv_class_tree$size, cv_class_tree$dev, type = "b")
 plot(cv_class_tree$k, cv_class_tree$dev, type = "b")
+
