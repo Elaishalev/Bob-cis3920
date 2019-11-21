@@ -224,6 +224,7 @@ cor(lin.reg_prediction,sample_testing$price)
 summary(lin.reg_model)
 sqrt(mse_lin.reg)
 
+  
 par(mfrow=c(2,2))
 plot(lin.reg_model)
 
@@ -276,6 +277,9 @@ plot(lin.reg_model_3)
 ### PREDICTS THE PRICE BETTER THAN LM.
 
 library(tree)
+library(gbm)
+library(randomForest)
+
 tree_airbnb = tree(price~., sample_training)
 summary(tree_airbnb)
 par(mfrow=c(1,1))
@@ -287,15 +291,47 @@ summary(cv_airbnb)
 
 tree_prediction = predict(tree_airbnb, newdata = sample_testing)
 plot(tree_prediction, sample_testing$price)
-abline(0,1)
+abline(0,1, col = 5)
 mse_tree = mean((tree_prediction - sample_testing$price)^2)
 mse_tree
 cor(lin.reg_prediction_2,sample_testing$price)
 sqrt(mse_tree)
 
-
 ## THE REGRESSION TREE MODEL DOESN'T PREDICT PRICE
 ## AS WELL AS THE LINEAR REGRESSION MODEL.
+
+
+## BOOSTING THE REG. TREE IN ORDER TO TRY GET 
+## A BETTER PREDICTION TREE
+
+boost_reg_tree = gbm(price~., data = sample_training, distribution = "gaussian"
+                     , n.trees = 5000)
+summary(boost_reg_tree)
+boost_reg_pred = predict(boost_reg_tree, newdata = sample_testing, n.trees = 5000)
+mse_reg_boost = mean((boost_reg_pred - sample_testing$price)^2)
+mse_reg_boost
+cor(boost_reg_pred,sample_testing$price)
+
+## BOOSTING IMPROVED THE MISCLASSIFICATION RATE!
+## BUT IT'S STILL NOT AS ACCURATE AS LIN. REG..
+## SUMMARY TELLS US THAT AVAILABILITY IS THE MOST 
+## INFLUENCIAL ATTRIBUTE ON PREDICTING THE PRICE!
+
+## NOW TRYING BAGGING TO COMPARE TO PREVIOUS METHODS
+
+bagging_reg_tree = randomForest(price~., data = sample_training
+                                , mtry = 11, importance = T)
+bagging_reg_pred = predict(bagging_reg_tree, newdata = sample_testing)
+plot(bagging_reg_pred, sample_testing$price)
+abline(0,1, col = 5)
+mse_bagging_reg = mean((bagging_reg_pred - sample_testing$price)^2)
+mse_bagging_reg
+summary(bagging_reg_tree)
+cor(bagging_reg_pred,sample_testing$price)
+
+## BAGGING HAS PROVIDED THE BEST 
+## MISCLASSIFICATION RATE, AND THE BEST CORRELATION
+## BETWEEN PREDICTIONS AND TESTING DATA!
 
 
 
@@ -333,7 +369,7 @@ class_tree_testing = sample_data[-class_tree_split,]
 class_tree = tree(neighbourhood_group~
             room_type+price+minimum_nights+number_of_reviews+reviews_per_month
             +calculated_host_listings_count+availability_365
-            , sample_data, subset = class_tree_training)
+            , class_tree_training)
 summary(class_tree)
 plot(class_tree)
 text(class_tree)
@@ -360,12 +396,19 @@ text(prune_class_tree)
 
 prune_tree_pred = predict(prune_class_tree, class_tree_testing, type = "class")
 table(prune_tree_pred,class_tree_testing$neighbourhood_group)
-misclass_rate_prune = 1-((66+82+5)/246)
+misclass_rate_prune = 1-((47+81+3)/246)
 misclass_rate_prune
 
-## THE MISCLASSIFICATION RATE WENT UP BY
-## ABOUT 2%. THE TREE MODEL WAS PERFORMING
-## BETTER BEFORE THE PRUNING.
+## THE MISCLASSIFICATION RATE WENT UP BY ALMOST 10%.
+## THE TREE MODEL WAS PERFORMING BETTER BEFORE THE PRUNING.
+
+## BOOSTING THE TREE TO TRY AND IMPROVE IT
+# tried, but it didn't work 
+
+## Trying bagging...
+
+
+
 
 ## WE CAN LEARN THAT THE DATA OF LISTINGS IN MANHATTAN AND
 ## BROOKLYN IS VERY SIMILAR TO EACH OTHER, AND IS VERY
